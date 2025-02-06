@@ -1,87 +1,38 @@
-import type { Request, Response } from "express";
-const express = require("express");
-
+import express, { type Request, type Response } from "express";
+import { connectDB } from "./config/database.js";
 const app = express();
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello from Express");
-});
-
-// app.use("/user", (req: Request, res: Response) => {
-//   res.send("LOL LMFAO HAHAHA");
-// });
-// app.get("/user", (req: Request, res: Response) => {
-//   res.send({
-//     name: "Hrithik",
-//   });
+import User from "./models/user.js";
+import { UserInterface } from "./types/dbInterfaces.js";
+// const user = new User({
+//   firstName: "Jess",
+//   lastName: "Faden",
+//   email: "Jess@Faden.com",
+//   password: "Faden@1234",
+//   age: 30,
+//   gender: "female",
 // });
 
-app.post("/user", (req: Request, res: Response) => {
-  console.log("Save data to DB");
-
-  res.send("Data saved successfully in Database");
+app.use(express.json());
+app.post("/signup", async (req: Request, res: Response) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    console.log(user.email);
+    res.send("User created");
+  } catch (error: any) {
+    res.status(500).send("Something went wrong: " + error.message);
+  }
 });
 
-app.delete("/user", (req: Request, res: Response) => {
-  console.log("Delete");
+connectDB()
+  .then(() => {
+    console.log("DB Connection successfull ");
 
-  res.send("Deleted successfully in Database");
-});
-
-//Advance routing
-
-app.get("/ab?c", (req: Request, res: Response) => {
-  res.send("ab?c b is optional");
-});
-app.get("/ab+c", (req: Request, res: Response) => {
-  res.send("ab+++c can have many b's");
-});
-
-app.get("/ab*cd", (req: Request, res: Response) => {
-  res.send("ab*cd there can be anything between ab and cd");
-});
-
-app.get("/a(bc)?d", (req: Request, res: Response) => {
-  res.send("a(bc)?d grouping, bc is optional");
-});
-
-app.get("/a(bc)+d", (req: Request, res: Response) => {
-  res.send("a(bc)+d grouping, can have many bc's");
-});
-
-//Regex
-
-app.get(/a/, (req: Request, res: Response) => {
-  res.send("Regex /a/ anything which contains 'a' ");
-});
-
-app.get(/.*fly$/, (req: Request, res: Response) => {
-  res.send("Regex /.*fly$/ anything which ends with 'fly' ");
-});
-
-// Query Params
-app.get("/user", (req: Request, res: Response) => {
-  console.log(req.query);
-  res.send("Query Params");
-});
-
-// Dynamic Routes or Params
-app.get("/user/:userId/:name/:password", (req: Request, res: Response) => {
-  console.log(req.params);
-  res.send("Dynamic Routes ");
-});
-// app.use("/hello/2", (req: Request, res: Response) => {
-//   res.send("Abracadabra");
-// });
-
-// app.use("/hello", (req: Request, res: Response) => {
-//   res.send("Hello Hello Hello");
-// });
-
-app.use("/test", (req: Request, res: Response) => {
-  res.send("Test Test Test");
-});
-
-app.listen(7777, () => {
-  console.log("Server successfully listening on port 7777");
-});
+    app.listen(7777, () => {
+      console.log("Server successfully listening on port 7777");
+    });
+  })
+  .catch((err: any) => {
+    //TODO: Define Error Object. NEVER use any
+    console.error("Database connection failed :: " + err.message);
+  });
