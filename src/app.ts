@@ -2,25 +2,33 @@ import express, { type Request, type Response } from "express";
 import { connectDB } from "./config/database.js";
 const app = express();
 import User from "./models/user.js";
-import { UserInterface } from "./types/dbInterfaces.js";
-// const user = new User({
-//   firstName: "Jess",
-//   lastName: "Faden",
-//   email: "Jess@Faden.com",
-//   password: "Faden@1234",
-//   age: 30,
-//   gender: "female",
-// });
+import { validateSignUp } from "./middlewares/validateSignUp.js";
+import { sendResponse } from "./utils/responseHelper.js";
 
 app.use(express.json());
-app.post("/signup", async (req: Request, res: Response) => {
+app.post("/signup", validateSignUp, async (req: Request, res: Response) => {
   try {
     const user = new User(req.body);
     await user.save();
     console.log(user.email);
-    res.send("User created");
-  } catch (error: any) {
-    res.status(500).send("Something went wrong: " + error.message);
+
+    sendResponse(res, 201, true, "User created successfully");
+  } catch (err: any) {
+    //MongoDB error if email already exists
+    if (err.code === 11000) {
+      return sendResponse(res, 409, false, "Email already exists", null, [
+        {
+          field: "email",
+          message: "Email already exists",
+        },
+      ]);
+      return;
+    }
+    //Any other errors
+    //Also includes error sent by validation middleware if it encounters error other than of zod
+    sendResponse(res, 500, false, "Something went wrong", null, [
+      { field: "server", message: err.message },
+    ]);
   }
 });
 

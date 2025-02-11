@@ -1,6 +1,8 @@
-import { Schema, model } from "mongoose";
-import { UserInterface } from "../types/dbInterfaces.js";
-const userSchema = new Schema<UserInterface>({
+import { Schema, model, Document } from "mongoose";
+import { z } from "zod";
+import { userZodSchema } from "../schemas/User.zod.js";
+type UserType = z.infer<typeof userZodSchema> & Document; //Typescript Type
+const userSchema = new Schema<UserType>({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -9,5 +11,5 @@ const userSchema = new Schema<UserInterface>({
   gender: { type: String, required: true },
 });
 
-const UserModel = model<UserInterface>("User", userSchema);
+const UserModel = model<UserType>("User", userSchema);
 export default UserModel;
