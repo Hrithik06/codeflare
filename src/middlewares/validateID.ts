@@ -12,6 +12,7 @@ const validateID = (req: Request, res: Response, next: NextFunction): void => {
       },
     ]);
   }
+
   next();
 };
 export default validateID;

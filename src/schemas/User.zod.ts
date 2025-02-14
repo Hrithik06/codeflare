@@ -2,14 +2,21 @@ import { z } from "zod";
 export const emailZodSchema = z.string().email({
   message: "Invalid email format",
 });
-export const userZodSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters",
-  }),
 
-  lastName: z.string().min(1, {
-    message: "First name must be at least 1 character",
-  }),
+export const userZodSchema = z.object({
+  firstName: z
+    .string()
+    .min(2, {
+      message: "First name must be at least 2 characters",
+    })
+    .max(20, { message: "First name cannot exceed 20 characters" }),
+
+  lastName: z
+    .string()
+    .min(1, {
+      message: "Last name must be at least 1 character",
+    })
+    .max(20, { message: "Last name cannot exceed 20 characters" }),
   emailId: emailZodSchema,
   password: z
     .string()
@@ -35,4 +42,6 @@ export const userZodSchema = z.object({
   gender: z.enum(["male", "female", "other"], {
     message: "Invalid gender. Allowed values: 'male', 'female', 'other'.",
   }),
+  about: z.optional(z.string()),
+  skills: z.optional(z.array(z.string())),
 });

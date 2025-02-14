@@ -1,9 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { userZodSchema, emailZodSchema } from "../schemas/User.zod.js";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 //making all fields of user schema as optional for patch/update request
 const userUpdateZodSchema = userZodSchema.partial();
+
+//making all fields apart from emailId of user schema as optional for patch/update request
+const userUpdateWithEmailRequiredZodSchema = userUpdateZodSchema.extend({
+  emailId: userZodSchema.shape.emailId, // Making emailId required again
+});
 
 const validateUpdate = (
   req: Request,
@@ -11,7 +16,11 @@ const validateUpdate = (
   next: NextFunction
 ): void => {
   try {
-    userUpdateZodSchema.parse(req.body);
+    const { userId } = req.params;
+    //If userId is not present then make sure emailId is present in req.body
+    userId
+      ? userUpdateZodSchema.parse(req.body)
+      : userUpdateWithEmailRequiredZodSchema.parse(req.body);
     next();
   } catch (err) {
     if (err instanceof ZodError) {

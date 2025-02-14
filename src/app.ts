@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express, { NextFunction, type Request, type Response } from "express";
 import mongoose from "mongoose";
 import { connectDB } from "./config/database.js";
 const app = express();
@@ -35,7 +35,7 @@ app.post("/signup", validateSignUp, async (req: Request, res: Response) => {
     //Any other errors
     //Also includes error sent by validation middleware if it encounters error other than of zod
     sendResponse(res, 500, false, "Something went wrong", null, [
-      { field: "server", message: err.message },
+      { field: "SignupError", message: err.message },
     ]);
   }
 });
@@ -57,13 +57,15 @@ app.get("/user/:userId", validateID, async (req: Request, res: Response) => {
     if (err.name === "CastError") {
       return sendResponse(res, 400, false, "Invalid user ID format", null, [
         {
-          field: "id",
+          field: "userId",
           message: err.message,
         },
       ]);
     }
     // console.error("Error fetching user:", err.message);
-    return sendResponse(res, 500, false, "Internal server error");
+    return sendResponse(res, 500, false, "Internal server error", null, [
+      { field: "GetIDError", message: err.message },
+    ]);
   }
 });
 
@@ -90,8 +92,10 @@ app.post(
         userResponse
       );
     } catch (err: any) {
-      console.error("Error fetching user:", err.message, err.code);
-      return sendResponse(res, 500, false, "Internal server error");
+      // console.error("Error fetching user:", err.message, err.code);
+      return sendResponse(res, 500, false, "Internal server error", null, [
+        { field: "GetEmailError", message: err.message },
+      ]);
     }
   }
 );
@@ -116,8 +120,10 @@ app.get("/feed", async (req: Request, res: Response) => {
       feedResponse
     );
   } catch (err: any) {
-    console.error("Error fetching user:", err.code);
-    return sendResponse(res, 500, false, "Internal server error");
+    console.error("Error fetching feed:", err);
+    return sendResponse(res, 500, false, "Internal server error", null, [
+      { field: "FeedError", message: err.message },
+    ]);
   }
 });
 
@@ -138,28 +144,36 @@ app.delete("/user/:userId", validateID, async (req: Request, res: Response) => {
     if (err.name === "CastError") {
       return sendResponse(res, 400, false, "Invalid user ID format", null, [
         {
-          field: "id",
+          field: "userId",
           message: err.message,
         },
       ]);
     }
     // console.error("Error fetching user:", err.message);
-    return sendResponse(res, 500, false, "Internal server error");
+    return sendResponse(res, 500, false, "Internal server error", null, [
+      {
+        field: "DeleteError",
+        message: err.message,
+      },
+    ]);
   }
 });
 
+//update user using id in path
 app.patch(
   "/user/:userId",
   validateID,
   validateUpdate,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
       const updateData = req.body;
 
       const updateResponse = await User.findByIdAndUpdate(userId, updateData, {
         returnDocument: "after",
+        runValidators: true,
       });
+
       //if _id is not found in DB mongoose returns null
       if (!updateResponse) {
         sendResponse(res, 404, false, "User not found");
@@ -167,11 +181,44 @@ app.patch(
       }
       sendResponse(res, 200, true, "User data updated", updateResponse);
     } catch (err: any) {
-      console.error("Update ERROR :", err);
-      return sendResponse(res, 500, false, "Internal server error");
+      console.error("Update ERROR :", err.name);
+      return sendResponse(res, 500, false, "Internal server error ", null, [
+        { field: "UpdateIdError", message: err.message },
+      ]);
     }
   }
 );
+// update user using email
+app.patch("/user", validateUpdate, async (req: Request, res: Response) => {
+  try {
+    const { emailId } = req.body;
+    const updateData = req.body;
+
+    const updateResponse = await User.findOneAndUpdate(
+      { emailId: emailId },
+      updateData,
+      {
+        runValidators: true,
+        returnDocument: "after",
+      }
+    );
+
+    //if emailId is not found in DB mongoose returns null
+    if (!updateResponse) {
+      sendResponse(res, 404, false, "User not found");
+      return;
+    }
+    sendResponse(res, 200, true, "User data updated", updateResponse);
+  } catch (err: any) {
+    console.error("Update ERROR :", err);
+    return sendResponse(res, 500, false, "Internal server error ", null, [
+      { field: "UpdateEmailError", message: err.message },
+    ]);
+  }
+});
+app.use("/", (req: Request, res: Response) => {
+  res.status(500).send("Internal server error");
+});
 connectDB()
   .then(() => {
     console.log("DB Connection successfull ");
