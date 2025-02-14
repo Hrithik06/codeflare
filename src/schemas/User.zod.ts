@@ -1,15 +1,16 @@
 import { z } from "zod";
-
+export const emailZodSchema = z.string().email({
+  message: "Invalid email format",
+});
 export const userZodSchema = z.object({
   firstName: z.string().min(2, {
     message: "First name must be at least 2 characters",
   }),
+
   lastName: z.string().min(1, {
     message: "First name must be at least 1 character",
   }),
-  email: z.string().email({
-    message: "Invalid email format",
-  }),
+  emailId: emailZodSchema,
   password: z
     .string()
     .min(8, {
@@ -31,5 +32,7 @@ export const userZodSchema = z.object({
     .number()
     .min(15, { message: "You must be at least 15 years old" })
     .max(120, { message: "Invalid age" }),
-  gender: z.enum(["male", "female", "other"], { message: "Invalid gender" }),
+  gender: z.enum(["male", "female", "other"], {
+    message: "Invalid gender. Allowed values: 'male', 'female', 'other'.",
+  }),
 });
