@@ -9,7 +9,9 @@ const validateSignUpData = (
   next: NextFunction
 ): void => {
   try {
-    userZodSchema.parse(req.body);
+    const validatedData = userZodSchema.parse(req?.body);
+    req.validatedData = validatedData;
+
     next();
   } catch (err) {
     if (err instanceof ZodError) {

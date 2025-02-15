@@ -1,7 +1,25 @@
 import { z } from "zod";
-export const emailZodSchema = z.string().email({
+import validator from "validator";
+export const emailZodSchema = z.string().toLowerCase().email({
   message: "Invalid email format",
 });
+export const passwordZodSchema = z
+  .string()
+  .min(8, {
+    message: "Password must be at least 8 characters",
+  })
+  .regex(/[A-Z]/, {
+    message: "Password must include at least one uppercase",
+  })
+  .regex(/[a-z]/, {
+    message: "Password must include at least one lowercase letter",
+  })
+  .regex(/[0-9]/, {
+    message: "Password must include at least one number",
+  })
+  .regex(/[\W_]/, {
+    message: "Password must include at least one special character",
+  });
 
 export const userZodSchema = z.object({
   firstName: z
@@ -18,23 +36,7 @@ export const userZodSchema = z.object({
     })
     .max(20, { message: "Last name cannot exceed 20 characters" }),
   emailId: emailZodSchema,
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must be at least 8 characters",
-    })
-    .regex(/[A-Z]/, {
-      message: "Password must include at least one uppercase",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must include at least one lowercase letter",
-    })
-    .regex(/[0-9]/, {
-      message: "Password must include at least one number",
-    })
-    .regex(/[\W_]/, {
-      message: "Password must include at least one special character",
-    }),
+  password: passwordZodSchema,
   age: z
     .number()
     .min(15, { message: "You must be at least 15 years old" })
@@ -42,6 +44,17 @@ export const userZodSchema = z.object({
   gender: z.enum(["male", "female", "other"], {
     message: "Invalid gender. Allowed values: 'male', 'female', 'other'.",
   }),
-  about: z.optional(z.string()),
-  skills: z.optional(z.array(z.string())),
+  photoUrl: z
+    .string()
+    .url()
+    .refine((value) => validator.isURL(value, { require_tld: true }), {
+      message: "Invalid URL",
+    })
+    .optional(),
+
+  about: z.string().optional(),
+  skills: z
+    .array(z.string())
+    .max(20, { message: "Maximum allowed skills are 2" })
+    .optional(),
 });

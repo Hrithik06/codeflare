@@ -1,5 +1,5 @@
 import express, { NextFunction, type Request, type Response } from "express";
-import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 import { connectDB } from "./config/database.js";
 const app = express();
 import User from "./models/user.js";
@@ -8,14 +8,22 @@ import {
   validateGetUserEmail,
   validateUpdate,
   validateID,
+  validateLogin,
 } from "./middlewares/index.js";
 import { sendResponse } from "./utils/responseHelper.js";
+import { CLIENT_RENEG_WINDOW } from "tls";
 app.use(express.json());
 
 //create a new user
 app.post("/signup", validateSignUp, async (req: Request, res: Response) => {
   try {
-    const user = new User(req.body);
+    const validatedData = req?.validatedData;
+    const plainPassword = validatedData?.password;
+    const saltRounds = 10;
+
+    const passwordHash = await bcrypt.hash(plainPassword, saltRounds);
+
+    const user = new User({ ...validatedData, password: passwordHash });
     await user.save();
 
     sendResponse(res, 201, true, "User created successfully", user);
@@ -40,10 +48,40 @@ app.post("/signup", validateSignUp, async (req: Request, res: Response) => {
   }
 });
 
+// Login
+app.post("/login", validateLogin, async (req: Request, res: Response) => {
+  try {
+    const { emailId, password: plainPassword } = req?.validatedData;
+    //only fetch "password" field from document
+    const dbResponse = await User.findOne({ emailId: emailId }).select(
+      "password"
+    );
+    if (!dbResponse) {
+      return sendResponse(res, 404, false, "User not found");
+    }
+    const match = await bcrypt.compare(plainPassword, dbResponse?.password);
+
+    if (!match) {
+      return sendResponse(
+        res,
+        401,
+        false,
+        "Authentication failed due to incorrect credentials."
+      );
+    }
+    sendResponse(res, 200, true, "User logged in successfully");
+  } catch (err: any) {
+    console.error("Login ERROR :", err);
+    return sendResponse(res, 500, false, "Internal server error ", null, [
+      { field: "LoginError", message: err.message },
+    ]);
+  }
+});
+
 //Get user details by id
 app.get("/user/:userId", validateID, async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params?.userId;
 
     const userResponse = await User.findById(userId);
     //If user not found mongoose returns null send error 404
@@ -75,7 +113,7 @@ app.post(
   validateGetUserEmail,
   async (req: Request, res: Response) => {
     try {
-      const userEmailId: string = req.body.emailId;
+      const userEmailId: string = req?.validatedData?.emailId;
 
       const userResponse = await User.findOne({ emailId: userEmailId });
       //If user not found mongoose returns null send error 404
@@ -130,7 +168,7 @@ app.get("/feed", async (req: Request, res: Response) => {
 // delete a user
 app.delete("/user/:userId", validateID, async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params?.userId;
 
     const deleteResponse = await User.findByIdAndDelete(userId);
     //If user not found mongoose returns null send error 404
@@ -166,8 +204,8 @@ app.patch(
   validateUpdate,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params;
-      const updateData = req.body;
+      const userId = req.params?.userId;
+      const updateData = req?.validatedData;
 
       const updateResponse = await User.findByIdAndUpdate(userId, updateData, {
         returnDocument: "after",
@@ -191,8 +229,8 @@ app.patch(
 // update user using email
 app.patch("/user", validateUpdate, async (req: Request, res: Response) => {
   try {
-    const { emailId } = req.body;
-    const updateData = req.body;
+    const { emailId } = req?.validatedData;
+    const updateData = req?.validatedData;
 
     const updateResponse = await User.findOneAndUpdate(
       { emailId: emailId },
@@ -217,7 +255,7 @@ app.patch("/user", validateUpdate, async (req: Request, res: Response) => {
   }
 });
 app.use("/", (req: Request, res: Response) => {
-  res.status(500).send("Internal server error");
+  return sendResponse(res, 500, false, "Soemthing went wrong");
 });
 connectDB()
   .then(() => {

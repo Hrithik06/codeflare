@@ -14,7 +14,9 @@ const validateGetUserEmail = (
     if (!userEmailId) {
       return sendResponse(res, 400, false, "Email ID is required");
     }
-    emailZodSchema.parse(userEmailId);
+
+    const validatedEmailId = emailZodSchema.parse(userEmailId);
+    req.validatedData = { emailId: validatedEmailId };
     next();
   } catch (err) {
     if (err instanceof ZodError) {
