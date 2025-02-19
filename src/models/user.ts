@@ -1,8 +1,25 @@
 import { Schema, model, Document } from "mongoose";
+import jwt, { Secret } from "jsonwebtoken";
 import { z } from "zod";
 import { userZodSchema } from "../schemas/User.zod.js";
 import validator from "validator";
-export type UserType = z.infer<typeof userZodSchema> & Document; //Typescript Type
+import bcrypt from "bcrypt";
+export interface IUser extends Document {
+  firstName: string;
+  lastName: string;
+  emailId: string;
+  password: string;
+  age: number;
+  gender: "male" | "female" | "other";
+  photoUrl?: string;
+  about?: string;
+  skills?: string[];
+  getJWT: () => string; // Mongoose Method
+  matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
+}
+
+// ✅ Infer Type from Zod and Extend It
+export type UserType = z.infer<typeof userZodSchema> & IUser;
 const userSchema = new Schema<UserType>(
   {
     firstName: {
@@ -81,5 +98,21 @@ const userSchema = new Schema<UserType>(
   { timestamps: true }
 );
 
+//this keyword points the current instance of the userSchema
+//any new user is a instance of userSchema
+userSchema.methods.getJWT = function () {
+  const JWT_SECRET_KEY: Secret = "Dev$5681%CodeHrithik&54354";
+  const user = this;
+  const token = jwt.sign({ _id: user._id }, JWT_SECRET_KEY);
+  return token;
+};
+
+userSchema.methods.matchPassword = async function (
+  passwordInputByUser: string
+) {
+  const passwordHashFromDB = this.password;
+  const isMatch = await bcrypt.compare(passwordInputByUser, passwordHashFromDB);
+  return isMatch;
+};
 const UserModel = model<UserType>("User", userSchema);
 export default UserModel;

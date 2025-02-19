@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { sendResponse } from "../utils/responseHelper.js";
-const validateID = (req: Request, res: Response, next: NextFunction): void => {
+const validatePathId = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -15,4 +19,4 @@ const validateID = (req: Request, res: Response, next: NextFunction): void => {
 
   next();
 };
-export default validateID;
+export default validatePathId;
