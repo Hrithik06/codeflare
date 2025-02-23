@@ -53,10 +53,6 @@ const userSchema = new Schema<UserType>(
       required: true,
       trim: true,
       validate: (value: string) => {
-        console.log(
-          "pswd validate:: ",
-          validator.isStrongPassword(value).valueOf()
-        );
         if (!validator.isStrongPassword(value)) {
           throw new Error("Enter a strong password");
         }
