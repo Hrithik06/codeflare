@@ -26,7 +26,7 @@ authRouter.post(
 
 			sendResponse(res, 201, true, "User created successfully", userData);
 		} catch (err: any) {
-			console.error("Error creating new user:", err.message);
+
 
 			//MongoDB error if email already exists
 			if (err.code === 11000) {
@@ -40,9 +40,14 @@ authRouter.post(
 			}
 			//Any other errors
 			//Also includes error sent by validation middleware if it encounters error other than of zod
-			sendResponse(res, 500, false, "Something went wrong", null, [
-				{ field: "SignupError", message: err.message },
-			]);
+			if (err instanceof Error) {
+				sendResponse(res, 500, false, "Something went wrong", null, [
+					{ field: "SignupError", message: err.message },
+				]);
+			} else {
+				return sendResponse(res, 500, false, "An unknown error occurred");
+			}
+
 		}
 	}
 );
@@ -91,11 +96,14 @@ authRouter.post(
 			});
 
 			sendResponse(res, 200, true, "User logged in successfully");
-		} catch (err: any) {
-			console.error("Login ERROR :", err);
-			return sendResponse(res, 500, false, "Internal server error ", null, [
-				{ field: "LoginError", message: err.message },
-			]);
+		} catch (err) {
+			if (err instanceof Error) {
+				return sendResponse(res, 500, false, "Internal server error ", null, [
+					{ field: "LoginError", message: err.message },
+				]);
+			} else {
+				return sendResponse(res, 500, false, "An unknown error occurred");
+			}
 		}
 	}
 );

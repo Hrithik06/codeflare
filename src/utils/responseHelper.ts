@@ -8,9 +8,9 @@ export const sendResponse = (
   res: Response,
   statusCode: number,
   success: boolean,
-  message: string,
+  message: string | null = null,
   data: any = null,
-  errors: { field: string; message: string }[] | null = null
+  errors: { field: string; message: string }[] | string | null = null
 ): void => {
   const responseObject: ApiResponseType = {
     success,

@@ -2,8 +2,13 @@ import { Document } from "mongoose";
 export interface UserInterface extends Document {
   firstName: string;
   lastName: string;
-  email: string;
+  emailId: string;
   password: string;
   age: number;
-  gender: string;
+  gender: "male" | "female" | "other";
+  photoUrl?: string;
+  about?: string;
+  skills?: string[];
+  getJWT: () => string; // Mongoose Method
+  matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
 }

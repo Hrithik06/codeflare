@@ -2,24 +2,13 @@ import { Schema, model, Document } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
 import { z } from "zod";
 import { userZodSchema } from "../schemas/User.zod.js";
+import { UserInterface } from "../types/dbInterfaces.js"
 import validator from "validator";
 import bcrypt from "bcrypt";
-export interface IUser extends Document {
-  firstName: string;
-  lastName: string;
-  emailId: string;
-  password: string;
-  age: number;
-  gender: "male" | "female" | "other";
-  photoUrl?: string;
-  about?: string;
-  skills?: string[];
-  getJWT: () => string; // Mongoose Method
-  matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
-}
+
 
 // ✅ Infer Type from Zod and Extend It
-export type UserType = z.infer<typeof userZodSchema> & IUser;
+export type UserType = z.infer<typeof userZodSchema> & UserInterface;
 const userSchema = new Schema<UserType>(
   {
     firstName: {

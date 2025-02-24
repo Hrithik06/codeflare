@@ -6,7 +6,7 @@ import { connectDB } from "./config/database.js";
 import User from "./models/user.js";
 import {
   validateGetUserEmail,
-  validateUpdate,
+  validateProfileEdit,
   validatePathId,
   userAuth,
 } from "./middlewares/index.js";
@@ -190,7 +190,7 @@ app.patch(
   "/user/:userId",
   userAuth,
   validatePathId,
-  validateUpdate,
+  validateProfileEdit,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       //userId from path
@@ -232,7 +232,7 @@ app.patch(
 app.patch(
   "/user",
   userAuth,
-  validateUpdate,
+  validateProfileEdit,
   async (req: Request, res: Response) => {
     try {
       const { emailId } = req?.validatedData;
