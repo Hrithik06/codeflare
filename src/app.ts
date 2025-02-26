@@ -1,8 +1,9 @@
 import express, { NextFunction, type Request, type Response } from "express";
 import cookieParser from "cookie-parser";
-
 import { ObjectId } from "mongoose";
-import { connectDB } from "./config/database.js";
+
+import { config } from "./config/config.js"
+import { connectDB } from "./config/databaseConnection.js";
 import User from "./models/user.js";
 import {
   validateGetUserEmail,
@@ -17,8 +18,10 @@ import requestRouter from "./routes/request.js";
 
 import { sendResponse } from "./utils/responseHelper.js";
 
-
 const app = express();
+
+
+
 //middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -267,12 +270,12 @@ app.patch(
 connectDB()
   .then(() => {
     console.log("DB Connection successfull ");
-
-    app.listen(7777, () => {
-      console.log("Server successfully listening on port 7777");
+    app.listen(config.PORT, () => {
+      console.log(`Server successfully listening on port ${config.PORT}`);
     });
   })
-  .catch((err: any) => {
+  .catch((err) => {
     //TODO: Define Error Object. NEVER use any
-    console.error("Database connection failed :: " + err.message);
+    console.error("Database connection failed \nERROR:: " + err.message);
+    process.exit(1)
   });

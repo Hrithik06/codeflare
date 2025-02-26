@@ -65,11 +65,16 @@ authRouter.post(
 		});
 		try {
 			const { emailId, password: plainPassword } = req?.validatedData;
+			console.log(emailId,
+				plainPassword
+			)
 			//only fetch "password" and "_id" field from document
 			const foundUser = await User.findOne({ emailId: emailId }).select([
 				"_id",
 				"password",
 			]);
+
+			console.log(foundUser)
 			if (!foundUser) {
 				return sendResponse(res, 404, false, "User not found");
 			}

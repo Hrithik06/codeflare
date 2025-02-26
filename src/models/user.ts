@@ -1,11 +1,11 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
 import { z } from "zod";
 import { userZodSchema } from "../schemas/User.zod.js";
 import { UserInterface } from "../types/dbInterfaces.js"
 import validator from "validator";
 import bcrypt from "bcrypt";
-
+import { config } from "../config/config.js";
 
 // ✅ Infer Type from Zod and Extend It
 export type UserType = z.infer<typeof userZodSchema> & UserInterface;
@@ -86,7 +86,8 @@ const userSchema = new Schema<UserType>(
 //this keyword points the current instance of the userSchema
 //any new user is a instance of userSchema
 userSchema.methods.getJWT = function () {
-  const JWT_SECRET_KEY: Secret = "Dev$5681%CodeHrithik&54354";
+  const JWT_SECRET_KEY: Secret = config.JWT_SECRET_KEY;
+
   const user = this;
   const token = jwt.sign({ _id: user._id }, JWT_SECRET_KEY);
   return token;

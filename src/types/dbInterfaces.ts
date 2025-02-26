@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 export interface UserInterface extends Document {
   firstName: string;
   lastName: string;
@@ -11,4 +11,9 @@ export interface UserInterface extends Document {
   skills?: string[];
   getJWT: () => string; // Mongoose Method
   matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
+}
+export interface ConnectionRequestInterface extends mongoose.Document {
+  fromUserId: mongoose.Schema.Types.ObjectId;
+  toUserId: mongoose.Schema.Types.ObjectId;
+  status: string;
 }
