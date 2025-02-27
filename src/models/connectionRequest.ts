@@ -1,5 +1,7 @@
 import mongoose from "mongoose"
+import { sendResponse } from "../utils/responseHelper.js";
 import { ConnectionRequestInterface } from "../types/dbInterfaces.js";
+
 
 const connectionRequestSchema = new mongoose.Schema<ConnectionRequestInterface>({
     fromUserId: {
@@ -14,11 +16,21 @@ const connectionRequestSchema = new mongoose.Schema<ConnectionRequestInterface>(
         type: String,
         enum: {
             values: ["interested", "ignored", "accepted", "rejected"],
-            message: "{VALUE} is invalid type of status"
+            message: "{VALUE} is not supported."
         },
         required: true
     },
 })
-
-const ConnectionRequestModel = mongoose.model("ConnectionRequest", connectionRequestSchema)
+connectionRequestSchema.pre("save", function (next) {
+    try {
+        if (String(this.fromUserId) === String(this.toUserId)) {
+            throw new Error("fromUserId and toUserId are same")
+        }
+        next()
+    } catch (err) {
+        if (err instanceof Error)
+            next(err)
+    }
+})
+const ConnectionRequestModel = mongoose.model<ConnectionRequestInterface>("ConnectionRequest", connectionRequestSchema)
 export default ConnectionRequestModel;

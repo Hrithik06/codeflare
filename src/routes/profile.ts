@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express"
-import { userAuth } from "../middlewares/index.js"
+import userAuth from "../middlewares/userAuth.js"
 import { sendResponse } from "../utils/responseHelper.js"
-import { validateProfileEdit } from "../middlewares/index.js"
+import { validateProfileEdit } from "../validators/index.js"
 
 const profileRouter = express.Router()
 

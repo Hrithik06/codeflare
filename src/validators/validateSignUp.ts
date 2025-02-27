@@ -3,7 +3,7 @@ import { userZodSchema, emailZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 
-const validateSignUpData = (
+const validateSignUp = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -35,4 +35,4 @@ const validateSignUpData = (
     next(err);
   }
 };
-export default validateSignUpData;
+export default validateSignUp;

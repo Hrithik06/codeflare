@@ -9,9 +9,8 @@ import {
   validateGetUserEmail,
   validateProfileEdit,
   validatePathId,
-  userAuth,
-} from "./middlewares/index.js";
-
+} from "./validators/index.js";
+import userAuth from "./middlewares/userAuth.js";
 import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
 import requestRouter from "./routes/request.js";
@@ -276,6 +275,7 @@ connectDB()
   })
   .catch((err) => {
     //TODO: Define Error Object. NEVER use any
+    console.log(err)
     console.error("Database connection failed \nERROR:: " + err.message);
     process.exit(1)
   });

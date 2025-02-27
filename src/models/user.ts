@@ -1,15 +1,11 @@
 import { Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
-import { z } from "zod";
-import { userZodSchema } from "../schemas/User.zod.js";
 import { UserInterface } from "../types/dbInterfaces.js"
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { config } from "../config/config.js";
 
-// ✅ Infer Type from Zod and Extend It
-export type UserType = z.infer<typeof userZodSchema> & UserInterface;
-const userSchema = new Schema<UserType>(
+const userSchema = new Schema<UserInterface>(
   {
     firstName: {
       type: String,
@@ -54,6 +50,7 @@ const userSchema = new Schema<UserType>(
       max: 120,
       trim: true,
     },
+    //can also make this as enum for validation
     gender: {
       type: String,
       required: true,
@@ -69,7 +66,7 @@ const userSchema = new Schema<UserType>(
     photoUrl: {
       type: String,
       validate: (value: string) => {
-        if (!validator.isURL(value)) {
+        if (!validator.isURL(value)) {//using validatorjs
           throw new Error("Invalid URL format");
         }
       },
@@ -100,5 +97,5 @@ userSchema.methods.matchPassword = async function (
   const isMatch = await bcrypt.compare(passwordInputByUser, passwordHashFromDB);
   return isMatch;
 };
-const UserModel = model<UserType>("User", userSchema);
+const UserModel = model<UserInterface>("User", userSchema);
 export default UserModel;

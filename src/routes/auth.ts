@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import User from "../models/user.js";
-import { validateSignUp, validateLogin } from "../middlewares/index.js";
+import { validateSignUp, validateLogin } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
 const authRouter = express.Router();
 
@@ -65,16 +65,13 @@ authRouter.post(
 		});
 		try {
 			const { emailId, password: plainPassword } = req?.validatedData;
-			console.log(emailId,
-				plainPassword
-			)
+
 			//only fetch "password" and "_id" field from document
 			const foundUser = await User.findOne({ emailId: emailId }).select([
 				"_id",
 				"password",
 			]);
 
-			console.log(foundUser)
 			if (!foundUser) {
 				return sendResponse(res, 404, false, "User not found");
 			}
