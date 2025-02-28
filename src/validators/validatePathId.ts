@@ -17,6 +17,6 @@ const validatePathId = (
     ]);
   }
 
-  next();
+  return next();
 };
 export default validatePathId;

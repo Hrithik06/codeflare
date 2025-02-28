@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
-import { UserInterface } from "../types/dbInterfaces.js"
+import { UserInterface } from "../types/dbInterfaces.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { config } from "../config/config.js";
@@ -66,7 +66,8 @@ const userSchema = new Schema<UserInterface>(
     photoUrl: {
       type: String,
       validate: (value: string) => {
-        if (!validator.isURL(value)) {//using validatorjs
+        if (!validator.isURL(value)) {
+          //using validatorjs
           throw new Error("Invalid URL format");
         }
       },

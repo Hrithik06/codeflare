@@ -5,19 +5,16 @@ import { sendResponse } from "../utils/responseHelper.js";
 //making all fields of user schema as optional for patch/update request
 const userUpdateZodSchema = userZodSchema.partial();
 
-
-
 const validateProfileEdit = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   try {
-
-    const validatedData = userUpdateZodSchema.parse(req.body)
+    const validatedData = userUpdateZodSchema.parse(req.body);
     req.validatedData = validatedData;
 
-    next();
+    return next();
   } catch (err) {
     if (err instanceof ZodError) {
       console.log("Validation Error:", err.message);
@@ -37,7 +34,7 @@ const validateProfileEdit = (
     }
     //Error other than zod errors send it to express route to handle
     console.error("Unexpected Error:", err);
-    next(err);
+    return next(err);
   }
 };
 export default validateProfileEdit;

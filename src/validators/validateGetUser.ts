@@ -17,7 +17,7 @@ const validateGetUserEmail = (
 
     const validatedEmailId = emailZodSchema.parse(userEmailId);
     req.validatedData = { emailId: validatedEmailId };
-    next();
+    return next();
   } catch (err) {
     if (err instanceof ZodError) {
       console.error("Validation Error:", err.errors);
@@ -36,7 +36,7 @@ const validateGetUserEmail = (
     }
     //Error other than zod errors send it to express route to handle
     console.error("Unexpected Error:", err);
-    next(err);
+    return next(err);
   }
 };
 export default validateGetUserEmail;

@@ -2,7 +2,7 @@ import express, { NextFunction, type Request, type Response } from "express";
 import cookieParser from "cookie-parser";
 import { ObjectId } from "mongoose";
 
-import { config } from "./config/config.js"
+import { config } from "./config/config.js";
 import { connectDB } from "./config/databaseConnection.js";
 import User from "./models/user.js";
 import {
@@ -19,16 +19,13 @@ import { sendResponse } from "./utils/responseHelper.js";
 
 const app = express();
 
-
-
 //middlewares
 app.use(express.json());
 app.use(cookieParser());
 
-
-app.use("/", profileRouter)
-app.use("/", authRouter)
-app.use("/", requestRouter)
+app.use("/", profileRouter);
+app.use("/", authRouter);
+app.use("/", requestRouter);
 
 //Get user details by id
 app.get(
@@ -275,7 +272,7 @@ connectDB()
   })
   .catch((err) => {
     //TODO: Define Error Object. NEVER use any
-    console.log(err)
+    console.log(err);
     console.error("Database connection failed \nERROR:: " + err.message);
-    process.exit(1)
+    process.exit(1);
   });

@@ -46,8 +46,9 @@ export const userZodSchema = z.object({
   }),
   photoUrl: z
     .string()
-    .url()// zod's url() allows localhost also
-    .refine((value) => validator.isURL(value, { require_tld: true }), {//validator's isURL allows only https no localhost
+    .url() // zod's url() allows localhost also
+    .refine((value) => validator.isURL(value, { require_tld: true }), {
+      //validator's isURL allows only https no localhost
       message: "Invalid URL",
     })
     .optional(),

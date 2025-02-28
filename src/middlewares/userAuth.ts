@@ -2,7 +2,7 @@ import { NextFunction, type Request, type Response } from "express";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import { sendResponse } from "../utils/responseHelper.js";
 import User from "../models/user.js";
-import { config } from "../config/config.js"
+import { config } from "../config/config.js";
 
 const userAuth = async (req: Request, res: Response, next: NextFunction) => {
   // if there are no cookies present
@@ -19,7 +19,7 @@ const userAuth = async (req: Request, res: Response, next: NextFunction) => {
       sendResponse(res, 401, false, "Unauthorized: No JWT found");
       return;
     }
-    const JWT_SECRET_KEY: Secret = config.JWT_SECRET_KEY
+    const JWT_SECRET_KEY: Secret = config.JWT_SECRET_KEY;
     const decodedData = jwt.verify(token, JWT_SECRET_KEY) as JwtPayload;
     //Find the user
     const foundUser = await User.findById(decodedData?._id).select([

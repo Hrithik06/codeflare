@@ -3,7 +3,7 @@ import mongoose, { Document } from "mongoose";
 enum genderEnum {
   Male = "male",
   Female = "female",
-  Other = "other"
+  Other = "other",
 }
 export interface UserInterface extends Document {
   firstName: string;
@@ -23,10 +23,10 @@ enum statusEnum {
   interested = "interested",
   ignored = "ignored",
   accepted = "accepted",
-  rejected = "rejected"
+  rejected = "rejected",
 }
 export interface ConnectionRequestInterface extends mongoose.Document {
-  fromUserId: mongoose.Schema.Types.ObjectId;
-  toUserId: mongoose.Schema.Types.ObjectId;
+  fromUserId: mongoose.Types.ObjectId;
+  toUserId: mongoose.Types.ObjectId;
   status: statusEnum;
 }

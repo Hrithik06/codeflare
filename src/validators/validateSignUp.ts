@@ -12,7 +12,7 @@ const validateSignUp = (
     const validatedData = userZodSchema.parse(req?.body);
     req.validatedData = validatedData;
 
-    next();
+    return next();
   } catch (err) {
     if (err instanceof ZodError) {
       console.log("Validation Error:", err.message);
@@ -32,7 +32,7 @@ const validateSignUp = (
     }
     //Error other than zod errors send it to express route to handle
     console.error("Unexpected Error:", err);
-    next(err);
+    return next(err);
   }
 };
 export default validateSignUp;
