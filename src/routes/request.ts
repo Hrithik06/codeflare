@@ -2,8 +2,14 @@ import express, { Request, Response } from "express";
 import userAuth from "../middlewares/userAuth.js";
 import ConnectionRequest from "../models/connectionRequest.js";
 import User from "../models/user.js";
-import { validateConnectionRequest } from "../validators/index.js";
+import {
+  validateConnectionRequest,
+  validateReviewRequest,
+} from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
+import mongoose from "mongoose";
+import { ConnectionRequestInterface } from "../types/dbInterfaces.js";
+
 const requestRouter = express.Router();
 
 requestRouter.post(
@@ -12,7 +18,8 @@ requestRouter.post(
   validateConnectionRequest,
   async (req: Request, res: Response) => {
     try {
-      const fromUserId = req.user._id;
+      const loggedInUser = req.user;
+      const fromUserId = loggedInUser._id as string; //comes from loggedInUser
       const { toUserId, status } = req.params;
 
       //First check whether toUser exists or not?
@@ -35,40 +42,24 @@ requestRouter.post(
           { fromUserId: toUserId, toUserId: fromUserId },
         ],
       });
+
       if (existingConnection) {
-        if (existingConnection.status === status) {
-          return sendResponse(
-            res,
-            400,
-            false,
-            `Existing request between ${req.user.firstName} and ${
+        //Construct message according the fromUserId and toUserId
+        const message = existingConnection.fromUserId.equals(
+          fromUserId.toString()
+        )
+          ? `You have already sent a request to ${
               toUserExists.firstName
-            } with status: ${existingConnection.status.toUpperCase()}`,
-            existingConnection
-          );
+            } with status: ${existingConnection.status.toUpperCase()}`
+          : `You have already received a request from ${
+              toUserExists.firstName
+            } with status: ${existingConnection.status.toUpperCase()}`;
+
+        if (existingConnection.status === status) {
+          return sendResponse(res, 409, false, message);
         }
-        //TODO: Better handling of status change
-        // const changeConnectionStatus = await ConnectionRequest.findOneAndUpdate(
-        //   {
-        //     $or: [
-        //       { fromUserId, toUserId },
-        //       { fromUserId: toUserId, toUserId: fromUserId },
-        //     ],
-        //   },
-        //   { status },
-        //   { new: true }
-        // );
-        // if (changeConnectionStatus) {
-        //   return sendResponse(
-        //     res,
-        //     200,
-        //     true,
-        //     `Existing request between ${req.user.firstName} and ${
-        //       toUserExists.firstName
-        //     } with updated status: ${status.toUpperCase()}`,
-        //     changeConnectionStatus
-        //   );
-        // }
+        // Not changing status once ignored
+        //CASE: What if userA sends userB "ignored", but userB sends userA "interested"
       }
       //Create a new connection request in DB
       const newConnectionRequest = new ConnectionRequest({
@@ -90,18 +81,33 @@ requestRouter.post(
 );
 
 requestRouter.post(
-  "/request/send/ignored/:userId",
+  "/request/review/:status/:requestId",
   userAuth,
-  async (req: Request, res: Response) => {}
+  validateReviewRequest, //zod handles allowed values and requestId
+  async (req: Request, res: Response) => {
+    const loggedInUser = req.user;
+    const { status, requestId } = req.params;
+
+    const existingConnection = await ConnectionRequest.findOne({
+      _id: requestId,
+      toUserId: loggedInUser._id,
+      status: "interested",
+    });
+    //If there is no Request present in DB
+    if (!existingConnection) {
+      return sendResponse(res, 404, false, "No Request Found");
+    } else {
+      existingConnection.status = status;
+      await existingConnection.save();
+      return sendResponse(
+        res,
+        200,
+        true,
+        `Request ${status} successfully`,
+        existingConnection
+      );
+    }
+  }
 );
-requestRouter.post(
-  "/request/review/acccepted/:requestId",
-  userAuth,
-  async (req: Request, res: Response) => {}
-);
-requestRouter.post(
-  "/request/review/rejected/:requestId",
-  userAuth,
-  async (req: Request, res: Response) => {}
-);
+
 export default requestRouter;

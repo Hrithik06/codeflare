@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { sendResponse } from "../utils/responseHelper.js";
 import { ConnectionRequestInterface } from "../types/dbInterfaces.js";
 
 const connectionRequestSchema = new mongoose.Schema<ConnectionRequestInterface>(

@@ -19,14 +19,8 @@ export interface UserInterface extends Document {
   matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
 }
 
-enum statusEnum {
-  interested = "interested",
-  ignored = "ignored",
-  accepted = "accepted",
-  rejected = "rejected",
-}
 export interface ConnectionRequestInterface extends mongoose.Document {
   fromUserId: mongoose.Types.ObjectId;
   toUserId: mongoose.Types.ObjectId;
-  status: statusEnum;
+  status: string;
 }

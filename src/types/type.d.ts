@@ -8,7 +8,7 @@ declare global {
   namespace Express {
     interface Request {
       validatedData?: ValidatedType;
-      user: UserInterface; // attaching data after login
+      user: UserInterface & Document; // attaching data after login
     }
   }
 }
