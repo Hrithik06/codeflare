@@ -1,9 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { userZodSchema } from "../schemas/User.zod.js";
+import { emailZodSchema, userZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 //making all fields of user schema as optional for patch/update request
-const userUpdateZodSchema = userZodSchema.partial();
+const userUpdateZodSchema = userZodSchema
+  .omit({
+    emailId: true,
+    password: true,
+  }) // do not let user to update emailId and password here
+  .partial();
 
 const validateProfileEdit = (
   req: Request,
@@ -11,6 +16,16 @@ const validateProfileEdit = (
   next: NextFunction
 ): void => {
   try {
+    const { emailId, password } = req.body;
+    //Early return if user is trying to update emailId or password
+    if (emailId || password) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "You cannot update email or password."
+      );
+    }
     const validatedData = userUpdateZodSchema.parse(req.body);
     req.validatedData = validatedData;
 

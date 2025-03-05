@@ -7,8 +7,6 @@ import {
   validateReviewRequest,
 } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
-import mongoose from "mongoose";
-import { ConnectionRequestInterface } from "../types/dbInterfaces.js";
 
 const requestRouter = express.Router();
 

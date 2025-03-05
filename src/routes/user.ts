@@ -21,7 +21,7 @@ userRouter.get(
   }
 );
 userRouter.get(
-  "/user/requests",
+  "/user/requests/recieved",
   userAuth,
   async (req: Request, res: Response) => {
     const loggedInUser = req.user;
