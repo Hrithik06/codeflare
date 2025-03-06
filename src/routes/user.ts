@@ -44,7 +44,7 @@ userRouter.get(
     })
       .populate("fromUserId", SAFE_USER_DATA)
       .select("fromUserId -_id");
-    //FIXME:if Elena is being returned as a connection to Elena not Nathan, because Elena sent the request, fromUserId is Elena's
+    //FIXME:Elena's profile is being returned as a connection to Elena not Nathan, because Elena sent the request, fromUserId is Elena's
     const data = connectionList.map((row) => row.fromUserId);
     data.length === 0
       ? sendResponse(res, 200, true, "No connections for you", [])
