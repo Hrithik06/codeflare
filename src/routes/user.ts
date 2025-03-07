@@ -43,9 +43,16 @@ userRouter.get(
       $or: [{ toUserId: loggedInUser._id }, { fromUserId: loggedInUser._id }],
     })
       .populate("fromUserId", SAFE_USER_DATA)
-      .select("fromUserId -_id");
-    //FIXME:Elena's profile is being returned as a connection to Elena not Nathan, because Elena sent the request, fromUserId is Elena's
-    const data = connectionList.map((row) => row.fromUserId);
+      .populate("toUserId", SAFE_USER_DATA);
+
+    //FIXME:Elena's profile is being returned as a connection to Elena not Nathan, because Elena sent the request, fromUserId is Elena's //[x]FIXED
+    const data = connectionList.map((row) => {
+      if (row.fromUserId._id.equals(loggedInUser._id as string)) {
+        return row.toUserId;
+      }
+      return row.fromUserId;
+    });
+
     data.length === 0
       ? sendResponse(res, 200, true, "No connections for you", [])
       : sendResponse(res, 200, true, "Your connections are", data);
