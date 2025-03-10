@@ -56,9 +56,21 @@ requestRouter.post(
         if (existingConnection.status === status) {
           return sendResponse(res, 409, false, message);
         }
+        if (existingConnection.status === "accepted") {
+          return sendResponse(
+            res,
+            409,
+            false,
+            `${toUserExists.firstName} is already in your connection`
+          );
+        }
+        //FIXME:Better handling of requests which have been rejected.
+        //This should not happen as in the feed we do not show profile once it is rejected by either of the user.
+        return sendResponse(res, 409, false, `Connection rejected`);
         // Not changing status once ignored
         //CASE: What if userA sends userB "ignored", but userB sends userA "interested"
       }
+
       //Create a new connection request in DB
       const newConnectionRequest = new ConnectionRequest({
         fromUserId,
@@ -66,11 +78,14 @@ requestRouter.post(
         status,
       });
       await newConnectionRequest.save();
-
-      res.send(newConnectionRequest);
+      const message =
+        status === "interested"
+          ? `You are interested in ${toUserExists.firstName}`
+          : `You ignored ${toUserExists.firstName}`;
+      return sendResponse(res, 200, true, message, newConnectionRequest);
     } catch (err) {
       if (err instanceof Error) {
-        console.log("Error occurred:", err.message);
+        console.error("Error occurred: ", err.message);
         return sendResponse(res, 400, false, `ERROR: ${err.message}`);
       }
       return sendResponse(res, 500, false, "Unexpected Error");
@@ -83,27 +98,35 @@ requestRouter.post(
   userAuth,
   validateReviewRequest, //zod handles allowed values and requestId
   async (req: Request, res: Response) => {
-    const loggedInUser = req.user;
-    const { status, requestId } = req.params;
+    try {
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
 
-    const existingConnection = await ConnectionRequest.findOne({
-      _id: requestId,
-      toUserId: loggedInUser._id,
-      status: "interested",
-    });
-    //If there is no Request present in DB
-    if (!existingConnection) {
-      return sendResponse(res, 404, false, "No Request Found");
-    } else {
-      existingConnection.status = status;
-      await existingConnection.save();
-      return sendResponse(
-        res,
-        200,
-        true,
-        `Request ${status} successfully`,
-        existingConnection
-      );
+      const existingConnection = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+      //If there is no Request present in DB
+      if (!existingConnection) {
+        return sendResponse(res, 404, false, "No Request Found");
+      } else {
+        existingConnection.status = status;
+        await existingConnection.save();
+        return sendResponse(
+          res,
+          200,
+          true,
+          `Request ${status} successfully`, //accepted or rejected
+          existingConnection
+        );
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("Error occurred: ", err.message);
+        return sendResponse(res, 400, false, `ERROR: ${err.message}`);
+      }
+      return sendResponse(res, 500, false, "Unexpected Error");
     }
   }
 );

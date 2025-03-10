@@ -10,7 +10,7 @@ const validateConnectionRequest = (
 ) => {
   const { toUserId, status } = req.params;
   const { _id } = req.user;
-  const fromUserId = String(_id);
+  const fromUserId = _id as string;
 
   try {
     // Checking only for toUserId as fromUserId of loggedInUser's so need to again validate
