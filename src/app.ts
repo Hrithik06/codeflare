@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import { config } from "./config/config.js";
@@ -11,7 +12,12 @@ import userRouter from "./routes/user.js";
 
 const app = express();
 
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true
+}
 //middlewares
+app.use(cors(corsOptions))
 app.use(express.json());
 app.use(cookieParser());
 
