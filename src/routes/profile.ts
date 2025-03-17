@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import userAuth from "../middlewares/userAuth.js";
 import { sendResponse } from "../utils/responseHelper.js";
 import { validateProfileEdit } from "../validators/index.js";
-
+import User from "../models/user.js";
 const profileRouter = express.Router();
 
 profileRouter.get(
@@ -31,17 +31,18 @@ profileRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const loggedInUser = req.user;
-      Object.assign(loggedInUser, req.validatedData);
-
-      //Update data of loggedInUser with the data recieved from user
-      // Object.keys(req.validatedData).forEach(key => loggedInUser[key] = req.validatedData[key])
-      //NO need to do this as ZOD removes fields which are not present in schema
+      const updatedData = req.validatedData;
+      const updatedUser = await User.findByIdAndUpdate(
+        loggedInUser._id,
+        updatedData,
+        { new: true, runValidators: true }
+      );
       return sendResponse(
         res,
         200,
         true,
-        `${loggedInUser?.firstName}'s profile updated successfully`,
-        loggedInUser
+        `${updatedUser?.firstName}'s profile updated successfully`,
+        updatedUser
       );
     } catch (err) {
       if (err instanceof Error) {

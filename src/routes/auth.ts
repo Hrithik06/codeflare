@@ -64,11 +64,9 @@ authRouter.post(
       const { emailId, password: plainPassword } = req?.validatedData;
 
       //only fetch "password" and "_id" field from document
-      const foundUser = await User.findOne({ emailId: emailId }).select([
-        "_id",
-        "password",
-      ]);
-
+      const foundUser = await User.findOne({ emailId: emailId }).select(
+        "-createdAt -updatedAt -__v"
+      );
       if (!foundUser) {
         return sendResponse(res, 404, false, "User not found");
       }
@@ -94,7 +92,10 @@ authRouter.post(
         secure: true,
       });
 
-      sendResponse(res, 200, true, "User logged in successfully");
+      //destructuring to remove password from user to send to client
+      const { password, ...user } = foundUser.toJSON();
+
+      sendResponse(res, 200, true, "User logged in successfully", user);
     } catch (err) {
       if (err instanceof Error) {
         return sendResponse(res, 500, false, "Internal server error ", null, [
