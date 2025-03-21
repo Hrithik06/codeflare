@@ -1,10 +1,11 @@
 import { z } from "zod";
 import validator from "validator";
-export const emailZodSchema = z.string().toLowerCase().email({
+export const emailZodSchema = z.string().trim().toLowerCase().email({
   message: "Invalid email format",
 });
 export const passwordZodSchema = z
   .string()
+  .trim()
   .min(8, {
     message: "Password must be at least 8 characters",
   })
@@ -24,6 +25,7 @@ export const passwordZodSchema = z
 export const userZodSchema = z.object({
   firstName: z
     .string()
+    .trim()
     .min(2, {
       message: "First name must be at least 2 characters",
     })
@@ -31,6 +33,7 @@ export const userZodSchema = z.object({
 
   lastName: z
     .string()
+    .trim()
     .min(1, {
       message: "Last name must be at least 1 character",
     })
@@ -46,16 +49,14 @@ export const userZodSchema = z.object({
   }),
   photoUrl: z
     .string()
+    .trim()
     .url() // zod's url() allows localhost also
     .refine((value) => validator.isURL(value, { require_tld: true }), {
       //validator's isURL allows only https no localhost
       message: "Invalid URL",
-    })
-    .optional(),
-
-  about: z.string().optional(),
+    }),
+  about: z.string().trim(),
   skills: z
     .array(z.string())
-    .max(20, { message: "Maximum allowed skills are 2" })
-    .optional(),
+    .max(20, { message: "Maximum allowed skills are 2" }),
 });

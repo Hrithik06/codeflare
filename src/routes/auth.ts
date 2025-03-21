@@ -68,7 +68,12 @@ authRouter.post(
         "-createdAt -updatedAt -__v"
       );
       if (!foundUser) {
-        return sendResponse(res, 404, false, "User not found");
+        return sendResponse(
+          res,
+          404,
+          false,
+          "Email not found. Please sign up."
+        );
       }
 
       // match user password with encrypted password in DB
@@ -79,7 +84,7 @@ authRouter.post(
           res,
           401,
           false,
-          "Authentication failed due to incorrect credentials."
+          "Incorrect password. Please try again."
         );
       }
       const token = foundUser.getJWT();

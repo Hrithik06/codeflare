@@ -14,10 +14,10 @@ const app = express();
 
 const corsOptions = {
   origin: "http://localhost:5173",
-  credentials: true
-}
+  credentials: true,
+};
 //middlewares
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -39,3 +39,5 @@ connectDB()
     console.error("Database connection failed \nERROR:: " + err.message);
     process.exit(1);
   });
+
+// TODO: Create a custom error object, to handle errors

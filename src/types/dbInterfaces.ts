@@ -12,9 +12,9 @@ export interface UserInterface extends Document {
   password: string;
   age: number;
   gender: genderEnum;
-  photoUrl?: string;
-  about?: string;
-  skills?: string[];
+  photoUrl: string;
+  about: string;
+  skills: string[];
   getJWT: () => string; // Mongoose Method
   matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
 }

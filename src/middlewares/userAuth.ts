@@ -8,7 +8,7 @@ const userAuth = async (req: Request, res: Response, next: NextFunction) => {
   // if there are no cookies present
   try {
     if (!req.cookies || Object.keys(req.cookies).length === 0) {
-      sendResponse(res, 401, false, "Unauthorized: No JWT found");
+      sendResponse(res, 401, false, "Unauthorized: Please Login");
       return;
     }
     //Read the token from cookies
@@ -16,7 +16,7 @@ const userAuth = async (req: Request, res: Response, next: NextFunction) => {
     //Verify/Validate the token and get the decoded data
     //throws error if there is issue with JWT
     if (!token) {
-      sendResponse(res, 401, false, "Unauthorized: No JWT found");
+      sendResponse(res, 401, false, "Unauthorized: Please Login");
       return;
     }
     const JWT_SECRET_KEY: Secret = config.JWT_SECRET_KEY;

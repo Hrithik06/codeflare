@@ -12,7 +12,7 @@ const validateGetUserEmail = (
     const userEmailId: string = req.body.emailId;
     //Before parsing check email id is present or not
     if (!userEmailId) {
-      return sendResponse(res, 400, false, "Email ID is required");
+      return sendResponse(res, 400, false, "Email Id is required");
     }
 
     const validatedEmailId = emailZodSchema.parse(userEmailId);

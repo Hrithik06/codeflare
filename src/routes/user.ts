@@ -12,6 +12,7 @@ const SAFE_USER_DATA = [
   "gender",
   "age",
   "about",
+  "photoUrl",
   "skills",
 ];
 userRouter.get(
