@@ -48,7 +48,7 @@ profileRouter.patch(
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === "ValidationError") {
-          return sendResponse(res, 500, false, "Validation Error", null, [
+          return sendResponse(res, 400, false, "Validation Error", null, [
             { field: err.name, message: err.message },
           ]);
         }
