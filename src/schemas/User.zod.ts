@@ -40,13 +40,18 @@ export const userZodSchema = z.object({
     .max(20, { message: "Last name cannot exceed 20 characters" }),
   emailId: emailZodSchema,
   password: passwordZodSchema,
-  age: z
-    .number()
-    .min(15, { message: "You must be at least 15 years old" })
-    .max(120, { message: "Invalid age" }),
+  dateOfBirth: z.string().date(),
+  // age: z
+  //   .number()
+  //   .min(15, { message: "You must be at least 15 years old" })
+  //   .max(120, { message: "Invalid age" }),
   gender: z.enum(["male", "female", "other"], {
     message: "Invalid gender. Allowed values: 'male', 'female', 'other'.",
   }),
+  about: z.string().trim(),
+  skills: z
+    .array(z.string())
+    .max(20, { message: "Maximum allowed skills are 2" }),
   photoUrl: z
     .string()
     .trim()
@@ -55,8 +60,4 @@ export const userZodSchema = z.object({
       //validator's isURL allows only https no localhost
       message: "Invalid URL",
     }),
-  about: z.string().trim(),
-  skills: z
-    .array(z.string())
-    .max(20, { message: "Maximum allowed skills are 2" }),
 });

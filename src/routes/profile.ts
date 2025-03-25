@@ -15,7 +15,7 @@ profileRouter.get(
     } catch (err) {
       if (err instanceof Error) {
         return sendResponse(res, 500, false, "Internal server error ", null, [
-          { field: "ProfileError", message: err.message },
+          { field: err.name, message: err.message },
         ]);
       } else {
         return sendResponse(res, 500, false, "An unknown error occurred");
@@ -32,6 +32,7 @@ profileRouter.patch(
     try {
       const loggedInUser = req.user;
       const updatedData = req.validatedData;
+
       const updatedUser = await User.findByIdAndUpdate(
         loggedInUser._id,
         updatedData,
@@ -46,8 +47,13 @@ profileRouter.patch(
       );
     } catch (err) {
       if (err instanceof Error) {
+        if (err.name === "ValidationError") {
+          return sendResponse(res, 500, false, "Validation Error", null, [
+            { field: err.name, message: err.message },
+          ]);
+        }
         return sendResponse(res, 500, false, "Internal server error ", null, [
-          { field: "ProfileError", message: err.message },
+          { field: err.name, message: err.message },
         ]);
       } else {
         return sendResponse(res, 500, false, "An unknown error occurred");

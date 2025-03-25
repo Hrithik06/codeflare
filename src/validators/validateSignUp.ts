@@ -11,7 +11,6 @@ const validateSignUp = (
   try {
     const validatedData = userZodSchema.parse(req?.body);
     req.validatedData = validatedData;
-
     return next();
   } catch (err) {
     if (err instanceof ZodError) {

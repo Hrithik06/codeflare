@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { CallbackError, Error, Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
 import { UserInterface } from "../types/dbInterfaces.js";
 import validator from "validator";
@@ -43,12 +43,13 @@ const userSchema = new Schema<UserInterface>(
         }
       },
     },
+    dateOfBirth: {
+      type: Date,
+    },
     age: {
       type: Number,
-      required: true,
       min: 15,
       max: 120,
-      trim: true,
     },
     //can also make this as enum for validation
     gender: {
@@ -98,5 +99,58 @@ userSchema.methods.matchPassword = async function (
   const isMatch = await bcrypt.compare(passwordInputByUser, passwordHashFromDB);
   return isMatch;
 };
+
+userSchema.methods.ageCalculate = function (dob: Date) {
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  // Adjust age if the birth date hasn't occurred yet this year
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+  return age;
+};
+
+userSchema.pre("save", async function (next) {
+  if (this.dateOfBirth) {
+    this.age = this.ageCalculate(this.dateOfBirth);
+  }
+  next();
+});
+
+// Update dateOfBirth and age
+userSchema.pre("findOneAndUpdate", async function (next) {
+  //Get the document to be updated from DB
+  try {
+    //Get the update document from client
+    const update = this.getUpdate() as Partial<UserInterface>;
+
+    // update object doesn't have dateOfBirth then early return
+    if (!update.dateOfBirth) return;
+
+    const docToUpdate = (await this.model.findOne(
+      this.getFilter(),
+      "dateOfBirth"
+    )) as UserInterface;
+
+    const docDOB = Date.parse(docToUpdate.dateOfBirth.toString());
+    const updateDOB = Date.parse(update.dateOfBirth.toString());
+    //If both dateOfBirth are same early return no changes to be made
+    if (docDOB === updateDOB) return;
+
+    // if there is change in dateOfBirth then proceed
+    const age = docToUpdate.ageCalculate(update.dateOfBirth);
+    this.set({ age: age });
+
+    next();
+  } catch (err: any) {
+    next(err);
+  }
+});
 const UserModel = model<UserInterface>("User", userSchema);
 export default UserModel;
