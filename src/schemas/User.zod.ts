@@ -45,13 +45,13 @@ export const userZodSchema = z.object({
   //   .number()
   //   .min(15, { message: "You must be at least 15 years old" })
   //   .max(120, { message: "Invalid age" }),
-  gender: z.enum(["male", "female", "other"], {
-    message: "Invalid gender. Allowed values: 'male', 'female', 'other'.",
-  }),
+  // gender: z.enum(["Male", "Female", "Other"], {
+  //   message: "Invalid gender. Allowed values: 'Male', 'Female', 'Other'.",
+  // }),
   about: z.string().trim(),
   skills: z
     .array(z.string())
-    .max(20, { message: "Maximum allowed skills are 2" }),
+    .max(20, { message: "Maximum allowed skills are 20" }),
   photoUrl: z
     .string()
     .trim()

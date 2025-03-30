@@ -57,9 +57,9 @@ const userSchema = new Schema<UserInterface>(
       required: true,
       lowercase: true,
       validate: (value: string) => {
-        if (!["male", "female", "other"].includes(value)) {
+        if (!["Male", "Female", "Other"].includes(value)) {
           throw new Error(
-            "Gender data is invalid. Allowed values: 'male', 'female', 'other'."
+            "Gender data is invalid. Allowed values: 'Male', 'Female', 'Other'."
           );
         }
       },
@@ -91,7 +91,7 @@ userSchema.methods.getJWT = function () {
   const token = jwt.sign({ _id: user._id }, JWT_SECRET_KEY);
   return token;
 };
-
+2025;
 userSchema.methods.matchPassword = async function (
   passwordInputByUser: string
 ) {

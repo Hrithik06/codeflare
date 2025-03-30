@@ -31,8 +31,12 @@ profileRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const loggedInUser = req.user;
+      if (req.validatedData?.dateOfBirth) {
+        req.validatedData.dateOfBirth = new Date(
+          req.validatedData?.dateOfBirth
+        );
+      }
       const updatedData = req.validatedData;
-
       const updatedUser = await User.findByIdAndUpdate(
         loggedInUser._id,
         updatedData,
