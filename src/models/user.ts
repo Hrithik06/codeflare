@@ -55,7 +55,6 @@ const userSchema = new Schema<UserInterface>(
     gender: {
       type: String,
       required: true,
-      lowercase: true,
       validate: (value: string) => {
         if (!["Male", "Female", "Other"].includes(value)) {
           throw new Error(

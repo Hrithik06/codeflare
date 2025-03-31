@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { emailZodSchema, userZodSchema } from "../schemas/User.zod.js";
+import { emailIdZodSchema, userZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 //making all fields of user schema as optional for patch/update request

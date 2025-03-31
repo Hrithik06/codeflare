@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { passwordZodSchema, emailZodSchema } from "../schemas/User.zod.js";
+import { passwordZodSchema, emailIdZodSchema } from "../schemas/User.zod.js";
 import { ZodError, z } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 
 const loginZodSchema = z.object({
-  emailId: emailZodSchema,
+  emailId: emailIdZodSchema,
   password: passwordZodSchema,
 });
 const validateLogin = (

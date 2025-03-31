@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { emailZodSchema } from "../schemas/User.zod.js";
+import { emailIdZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 
 import { sendResponse } from "../utils/responseHelper.js";
@@ -15,7 +15,7 @@ const validateGetUserEmail = (
       return sendResponse(res, 400, false, "Email Id is required");
     }
 
-    const validatedEmailId = emailZodSchema.parse(userEmailId);
+    const validatedEmailId = emailIdZodSchema.parse(userEmailId);
     req.validatedData = { emailId: validatedEmailId };
     return next();
   } catch (err) {

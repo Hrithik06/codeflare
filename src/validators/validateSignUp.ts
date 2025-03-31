@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { userZodSchema, emailZodSchema } from "../schemas/User.zod.js";
+import { userZodSchema, emailIdZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 
