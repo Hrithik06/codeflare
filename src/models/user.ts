@@ -56,9 +56,9 @@ const userSchema = new Schema<UserInterface>(
       type: String,
       required: true,
       validate: (value: string) => {
-        if (!["Male", "Female", "Other"].includes(value)) {
+        if (!["Man", "Woman", "Non-binary"].includes(value)) {
           throw new Error(
-            "Gender data is invalid. Allowed values: 'Male', 'Female', 'Other'."
+            "Gender data is invalid. Allowed values: 'Man', 'Woman', 'Non-binary'."
           );
         }
       },

@@ -52,8 +52,8 @@ export const userZodSchema = z.object({
   dateOfBirth: z
     .string({ message: "Date of Birth is required" })
     .date("Please enter a valid date."),
-  gender: z.enum(["Male", "Female", "Other"], {
-    message: "Invalid gender. Allowed values: 'Male', 'Female', 'Other'.",
+  gender: z.enum(["Man", "Woman", "Non-binary"], {
+    message: "Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
   }),
   about: z.string({ message: "About is required" }).trim(),
   skills: z

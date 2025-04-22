@@ -1,10 +1,5 @@
 import mongoose, { Document } from "mongoose";
 
-enum genderEnum {
-  Male = "Male",
-  Female = "Female",
-  Other = "Other",
-}
 export interface UserInterface extends Document {
   firstName: string;
   lastName: string;
@@ -12,7 +7,7 @@ export interface UserInterface extends Document {
   password: string;
   dateOfBirth: Date;
   age?: number;
-  gender: genderEnum;
+  gender: "Man" | "Woman" | "Non-binary";
   photoUrl: string;
   about: string;
   skills: string[];
