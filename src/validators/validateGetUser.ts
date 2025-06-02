@@ -21,7 +21,7 @@ const validateGetUserEmail = (
   } catch (err) {
     if (err instanceof ZodError) {
       console.error("Validation Error:", err.errors);
-      console.log(err.message);
+      console.error(err.message);
       return sendResponse(
         res,
         400,

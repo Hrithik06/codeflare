@@ -26,10 +26,8 @@ const validateProfileEdit = (
         "You cannot update email or password."
       );
     }
-    console.log("Request Body for Profile Edit:", req.body);
     const validatedData = userUpdateZodSchema.parse(req.body);
     req.validatedData = validatedData;
-    console.log("Validated Data for Profile Edit:", validatedData);
     return next();
   } catch (err) {
     if (err instanceof ZodError) {
