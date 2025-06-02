@@ -17,7 +17,7 @@ requestRouter.post(
   async (req: Request, res: Response) => {
     try {
       const loggedInUser = req.user;
-      const fromUserId = loggedInUser._id as string; //comes from loggedInUser
+      const fromUserId = String(loggedInUser._id); //comes from loggedInUser
       const { toUserId, status } = req.params;
 
       //First check whether toUser exists or not?

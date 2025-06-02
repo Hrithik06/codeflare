@@ -23,7 +23,7 @@ const validateConnectionRequest = (
       ]);
     }
 
-    connectionRequestZodSchema.parse({ fromUserId, toUserId, status });
+    // connectionRequestZodSchema.parse({ fromUserId, toUserId, status });
 
     return next();
   } catch (err) {

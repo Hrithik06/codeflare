@@ -31,6 +31,7 @@ profileRouter.patch(
   async (req: Request, res: Response) => {
     try {
       const loggedInUser = req.user;
+
       if (req.validatedData?.dateOfBirth) {
         req.validatedData.dateOfBirth = new Date(
           req.validatedData?.dateOfBirth
@@ -50,6 +51,7 @@ profileRouter.patch(
         updatedUser
       );
     } catch (err) {
+      console.error(err);
       if (err instanceof Error) {
         if (err.name === "ValidationError") {
           return sendResponse(res, 400, false, "Validation Error", null, [

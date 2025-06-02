@@ -24,16 +24,33 @@ authRouter.post(
       //remove password field when returning data
       const { password: _, ...userData } = newUser.toObject();
 
+      const token = newUser.getJWT();
+
+      //TODO: implement refresh tokens
+      //set cookie with 1 day(s) expiry
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: true,
+      });
+
       sendResponse(res, 201, true, "User created successfully", userData);
     } catch (err: any) {
       //MongoDB error if email already exists
       if (err.code === 11000) {
-        sendResponse(res, 409, false, "Email already exists", null, [
-          {
-            field: "email",
-            message: "Email already exists",
-          },
-        ]);
+        sendResponse(
+          res,
+          409,
+          false,
+          "User already exists with this Email ID",
+          null,
+          [
+            {
+              field: "email",
+              message: "User already exists with this Email ID",
+            },
+          ]
+        );
         return; //early return so express doesn't send the next error response
       }
       //Any other errors
@@ -102,10 +119,12 @@ authRouter.post(
 
       sendResponse(res, 200, true, "User logged in successfully", user);
     } catch (err) {
+      console.error(err);
       if (err instanceof Error) {
-        return sendResponse(res, 500, false, "Internal server error ", null, [
-          { field: "LoginError", message: err.message },
-        ]);
+        // return sendResponse(res, 500, false, "Internal server error ", null, [
+        //   { field: "LoginError", message: err.message },
+        // ]);
+        return sendResponse(res, 500, false, "Internal server error");
       } else {
         return sendResponse(res, 500, false, "An unknown error occurred");
       }

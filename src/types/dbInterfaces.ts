@@ -7,10 +7,10 @@ export interface UserInterface extends Document {
   password: string;
   dateOfBirth: Date;
   age?: number;
-  gender: "Man" | "Woman" | "Non-binary";
-  photoUrl: string;
-  about: string;
-  skills: string[];
+  gender?: "Man" | "Woman" | "Non-binary";
+  photoUrl?: string;
+  about?: string;
+  skills?: string[];
   getJWT: () => string; // Mongoose Method
   matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
   ageCalculate: (dob: Date) => number;

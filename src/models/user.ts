@@ -54,7 +54,7 @@ const userSchema = new Schema<UserInterface>(
     //can also make this as enum for validation
     gender: {
       type: String,
-      required: true,
+      // required: true,
       validate: (value: string) => {
         if (!["Man", "Woman", "Non-binary"].includes(value)) {
           throw new Error(
@@ -65,6 +65,8 @@ const userSchema = new Schema<UserInterface>(
     },
     photoUrl: {
       type: String,
+      default:
+        "https://img.icons8.com/?size=500&id=423kipnPTZJn&format=png&color=000000",
       validate: (value: string) => {
         if (!validator.isURL(value)) {
           //using validatorjs
@@ -137,7 +139,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
       "dateOfBirth"
     )) as UserInterface;
 
-    const docDOB = Date.parse(docToUpdate.dateOfBirth.toString());
+    const docDOB = Date.parse(docToUpdate.dateOfBirth?.toString());
     const updateDOB = Date.parse(update.dateOfBirth.toString());
     //If both dateOfBirth are same early return no changes to be made
     if (docDOB === updateDOB) return;

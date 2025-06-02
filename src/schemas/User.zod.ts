@@ -51,15 +51,19 @@ export const userZodSchema = z.object({
   password: passwordZodSchema,
   dateOfBirth: z
     .string({ message: "Date of Birth is required" })
-    .date("Please enter a valid date."),
-  gender: z.enum(["Man", "Woman", "Non-binary"], {
-    message: "Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
-  }),
-  about: z.string({ message: "About is required" }).trim(),
+    .date("Please enter a valid date.")
+    .optional(),
+  gender: z
+    .enum(["Man", "Woman", "Non-binary"], {
+      message: "Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
+    })
+    .optional(),
+  about: z.string({ message: "About is required" }).trim().optional(),
   skills: z
     .array(z.string({ message: "Skills is required" }))
     .min(1, { message: "Minimum 1 skill required" })
-    .max(20, { message: "Maximum allowed skills are 20" }),
+    .max(20, { message: "Maximum allowed skills are 20" })
+    .optional(),
   photoUrl: z
     .string({ message: "Photo is required" })
     .trim()
@@ -67,5 +71,6 @@ export const userZodSchema = z.object({
     .refine((value) => validator.isURL(value, { require_tld: true }), {
       //validator's isURL allows only https no localhost
       message: "Invalid URL",
-    }),
+    })
+    .optional(),
 });
