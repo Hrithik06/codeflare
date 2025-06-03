@@ -135,7 +135,7 @@ authRouter.post(
 // TODO:More robust clearing cookies on client and server side
 authRouter.get("/logout", (req: Request, res: Response) => {
   // set expires to epoch so browser clears cookie
-  res.cookie("token", null, {
+  res.clearCookie("token", {
     expires: new Date(0),
     httpOnly: true,
     secure: true,
