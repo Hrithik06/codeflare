@@ -13,7 +13,7 @@ import userRouter from "./routes/user.js";
 const app = express();
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: config.ORIGIN,
   credentials: true,
 };
 //middlewares
