@@ -30,8 +30,8 @@ authRouter.post(
       //set cookie with 1 day(s) expiry
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        // httpOnly: true,
-        // secure: false,
+        httpOnly: true,
+        secure: false,
       });
 
       sendResponse(res, 201, true, "User created successfully", userData);
@@ -110,8 +110,8 @@ authRouter.post(
       //set cookie with 1 day(s) expiry
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        // httpOnly: true,
-        // secure: false,
+        httpOnly: true,
+        secure: false,
       });
 
       //destructuring to remove password from user to send to client
@@ -137,8 +137,8 @@ authRouter.get("/logout", (req: Request, res: Response) => {
   // set expires to epoch so browser clears cookie
   res.cookie("token", null, {
     expires: new Date(0),
-    // httpOnly: true,
-    // secure: false,
+    httpOnly: true,
+    secure: false,
   });
 
   return sendResponse(res, 200, true, "Logged out successfully");
