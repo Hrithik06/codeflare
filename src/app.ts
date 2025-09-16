@@ -10,6 +10,7 @@ import authRouter from "./routes/auth.js";
 import requestRouter from "./routes/request.js";
 import userRouter from "./routes/user.js";
 
+import "./utils/cronjob.js"
 const app = express();
 
 const corsOptions = {

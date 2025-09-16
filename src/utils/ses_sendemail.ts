@@ -17,7 +17,7 @@ node ses_sendemail.js
 import { SendEmailCommand } from "@aws-sdk/client-ses";
 import { sesClient } from "./sesClient.js";
 
-const createSendEmailCommand = (toAddress: string, fromAddress: string) => {
+const createSendEmailCommand = (toAddress: string, fromAddress: string, subject: string, message: string) => {
   return new SendEmailCommand({
     Destination: {
       /* required */
@@ -35,7 +35,7 @@ const createSendEmailCommand = (toAddress: string, fromAddress: string) => {
         /* required */
         Html: {
           Charset: "UTF-8",
-          Data: "<h1>Connection Request</h1>",
+          Data: `<p>${message}</p>`,
         },
         Text: {
           Charset: "UTF-8",
@@ -44,7 +44,7 @@ const createSendEmailCommand = (toAddress: string, fromAddress: string) => {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: "Connection Request from Harry",
+        Data: subject,
       },
     },
     Source: fromAddress,
@@ -54,10 +54,12 @@ const createSendEmailCommand = (toAddress: string, fromAddress: string) => {
   });
 };
 
-const run = async () => {
+const run = async (toAddress: string, subject: string, message: string) => {
   const sendEmailCommand = createSendEmailCommand(
     "awspracticemon@gmail.com",
-    "hrithik@gittogether.xyz"
+    "hrithik@gittogether.xyz",
+    subject,
+    message
   );
 
   try {
