@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import { connectionRequestZodSchema } from "../schemas/ConnectionRequest.zod.js";
 import { sendResponse } from "../utils/responseHelper.js";
 import { ZodError } from "zod";
 const validateConnectionRequest = (

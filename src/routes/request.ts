@@ -79,9 +79,13 @@ requestRouter.post(
         status,
       });
       await newConnectionRequest.save();
-      if (status === "interested") {
-        const ses = await run();
-      }
+      // if (status === "interested") {
+      //   const ses = await run(
+      //     toUserId,
+      //     "Pending Connection Request",
+      //     "You have a pending connection request please login to gittogether.xyz to accept or reject the request."
+      //   );
+      // }
       const message =
         status === "interested"
           ? `You are interested in ${toUserExists.firstName}`
