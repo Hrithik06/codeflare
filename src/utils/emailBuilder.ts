@@ -1,32 +1,37 @@
-const brevo = require("@getbrevo/brevo");
-
-let defaultClient = brevo.ApiClient.instance;
-
-let apiKey = defaultClient.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
-let apiInstance = new brevo.TransactionalEmailsApi();
-let sendSmtpEmail = new brevo.SendSmtpEmail();
-
-sendSmtpEmail.subject = "My {{params.subject}}";
-sendSmtpEmail.htmlContent =
-  "<html><body><h1>Common: This is my first transactional email {{params.parameter}}</h1></body></html>";
-sendSmtpEmail.sender = { name: "John", email: "example@example.com" };
-sendSmtpEmail.to = [{ email: "example@brevo.com", name: "sample-name" }];
-sendSmtpEmail.replyTo = { email: "example@brevo.com", name: "sample-name" };
-sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-1234" };
-sendSmtpEmail.params = {
-  parameter: "My param value",
-  subject: "common subject",
-};
-
-apiInstance.sendTransacEmail(sendSmtpEmail).then(
-  function (data) {
-    console.log(
-      "API called successfully. Returned data: " + JSON.stringify(data)
-    );
-  },
-  function (error) {
-    console.error(error);
-  }
+import {
+  TransactionalEmailsApi,
+  TransactionalEmailsApiApiKeys,
+  SendSmtpEmailReplyTo,
+} from "@getbrevo/brevo";
+import { config } from "../config/config.js";
+const transactionalEmailsApi = new TransactionalEmailsApi();
+transactionalEmailsApi.setApiKey(
+  TransactionalEmailsApiApiKeys.apiKey,
+  config.BREVO_API_KEY
 );
+
+async function sendTransactionalEmail(
+  toAddress: string,
+  subject: string,
+  message: string,
+  firstName: string
+) {
+  try {
+    const result = await transactionalEmailsApi.sendTransacEmail({
+      to: [{ email: toAddress }],
+      templateId: 1,
+      params: { params: firstName },
+      replyTo: { email: "no-reply@gittogether.xyz", name: "No Reply" },
+      // subject: subject,
+      // htmlContent: `<h1>${subject}</h1>`,
+      // // textContent: subject,
+      // sender: { email: "no-reply@gittogether.xyz", name: "GitTogether" },
+    });
+    console.log("Email sent! Message ID:", result.body.messageId);
+  } catch (error) {
+    console.error("Failed to send email:", error);
+  }
+}
+
+// sendTransactionalEmail();
+export { sendTransactionalEmail };

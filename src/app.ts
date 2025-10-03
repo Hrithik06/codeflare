@@ -9,11 +9,16 @@ import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
 import requestRouter from "./routes/request.js";
 import userRouter from "./routes/user.js";
-
-import "./utils/cronjob.js";
 import contactRouter from "./routes/contactUs.js";
+import { sendTransactionalEmail } from "./utils/emailBuilder.js";
+import "./utils/cronjob.js";
 const app = express();
-
+sendTransactionalEmail(
+  "awspracticemon@gmail.com",
+  "Pending Connection Request",
+  "You have a pending connection request please login to gittogether.xyz to accept or reject the request.",
+  "John"
+);
 const corsOptions = {
   origin: config.ORIGIN,
   credentials: true,

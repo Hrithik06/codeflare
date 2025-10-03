@@ -8,7 +8,8 @@ contactUsRouter.post(
   userAuth,
   validateContactUs,
   async (req: Request, res: Response) => {
-    res.send("Thanks for the message we will contact you.");
+    // res.send("Thanks for the message we will contact you.");
+    res.json(req.validatedData);
   }
 );
 export default contactUsRouter;
