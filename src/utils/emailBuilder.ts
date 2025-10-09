@@ -10,17 +10,12 @@ transactionalEmailsApi.setApiKey(
   config.BREVO_API_KEY
 );
 
-async function sendTransactionalEmail(
-  toAddress: string,
-  subject: string,
-  message: string,
-  firstName: string
-) {
+async function sendPendingRequestEmail(toAddress: string, firstName: string) {
   try {
     const result = await transactionalEmailsApi.sendTransacEmail({
       to: [{ email: toAddress }],
       templateId: 1,
-      params: { params: firstName },
+      params: { firstName: firstName },
       replyTo: { email: "no-reply@gittogether.xyz", name: "No Reply" },
       // subject: subject,
       // htmlContent: `<h1>${subject}</h1>`,
@@ -33,5 +28,4 @@ async function sendTransactionalEmail(
   }
 }
 
-// sendTransactionalEmail();
-export { sendTransactionalEmail };
+export { sendPendingRequestEmail };
