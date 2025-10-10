@@ -19,8 +19,6 @@
   "author": "hrithik06",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.826.0",
-    "@aws-sdk/client-sts": "^3.826.0",
     "@getbrevo/brevo": "^3.0.1",
     "@types/cors": "^2.8.17",
     "bcrypt": "^5.1.1",

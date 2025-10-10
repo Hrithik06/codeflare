@@ -11,6 +11,6 @@
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "workbench.colorTheme": "Abyss", // set as "true" to run 'prettier' last not first
+  "workbench.colorTheme": "Catppuccin Mocha", // set as "true" to run 'prettier' last not first
   
 }
