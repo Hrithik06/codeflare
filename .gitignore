@@ -1,4 +1,4 @@
 node_modules
 dist/
 .env
-default-nginx-config.bak
+# default-nginx-config.bak
