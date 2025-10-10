@@ -9,7 +9,8 @@ import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
 import requestRouter from "./routes/request.js";
 import userRouter from "./routes/user.js";
-
+import contactRouter from "./routes/contactUs.js";
+import "./utils/cronjob.js";
 const app = express();
 
 const corsOptions = {
@@ -25,6 +26,7 @@ app.use("/", profileRouter);
 app.use("/", authRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/", contactRouter);
 
 connectDB()
   .then(() => {

@@ -1,4 +1,4 @@
-import { CallbackError, Error, Schema, model } from "mongoose";
+import { Error, Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
 import { UserInterface } from "../types/dbInterfaces.js";
 import validator from "validator";

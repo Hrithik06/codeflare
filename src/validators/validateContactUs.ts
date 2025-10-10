@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { userZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
+import { contactUsZodSchema } from "../schemas/ContactUs.zod.js";
 import { sendResponse } from "../utils/responseHelper.js";
-
-const validateSignUp = (
+const validateContactUs = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   try {
-    const validatedData = userZodSchema.parse(req?.body);
+    const validatedData = contactUsZodSchema.parse(req?.body);
     req.validatedData = validatedData;
     return next();
   } catch (err) {
@@ -34,4 +33,4 @@ const validateSignUp = (
     return next(err);
   }
 };
-export default validateSignUp;
+export default validateContactUs;

@@ -7,7 +7,8 @@ import {
   validateReviewRequest,
 } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
-
+import { run } from "../utils/ses_sendemail.js"; // Importing the send email function
+import { whoAmI } from "../utils/whoAmI.js";
 const requestRouter = express.Router();
 
 requestRouter.post(
@@ -78,6 +79,13 @@ requestRouter.post(
         status,
       });
       await newConnectionRequest.save();
+      // if (status === "interested") {
+      //   const ses = await run(
+      //     toUserId,
+      //     "Pending Connection Request",
+      //     "You have a pending connection request please login to gittogether.xyz to accept or reject the request."
+      //   );
+      // }
       const message =
         status === "interested"
           ? `You are interested in ${toUserExists.firstName}`

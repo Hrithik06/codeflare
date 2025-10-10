@@ -11,6 +11,7 @@ const requiredEnvVariables = [
   "ORIGIN",
   "PORT",
   "JWT_SECRET_KEY",
+  "BREVO_API_KEY",
 ];
 
 requiredEnvVariables.forEach((key) => {
@@ -25,5 +26,6 @@ export const config = {
   DB_CLUSTER: process.env.DB_CLUSTER as string,
   ORIGIN: process.env.ORIGIN as string,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY as string,
+  BREVO_API_KEY: process.env.BREVO_API_KEY as string,
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
 };
