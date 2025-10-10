@@ -31,7 +31,7 @@ authRouter.post(
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: true,
+        secure: false,
       });
 
       sendResponse(res, 201, true, "User created successfully", userData);
@@ -71,12 +71,12 @@ authRouter.post(
   "/login",
   validateLogin,
   async (req: Request, res: Response) => {
-    //reset jwt cookie
-    res.cookie("token", "", {
-      expires: new Date(0),
-      httpOnly: true,
-      secure: true,
-    });
+    // //reset jwt cookie
+    // res.cookie("token", "", {
+    //   expires: new Date(0),
+    //   httpOnly: true,
+    //   secure: false,
+    // });
     try {
       const { emailId, password: plainPassword } = req?.validatedData;
 
@@ -111,7 +111,7 @@ authRouter.post(
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: true,
+        secure: false,
       });
 
       //destructuring to remove password from user to send to client
@@ -138,7 +138,7 @@ authRouter.get("/logout", (req: Request, res: Response) => {
   res.clearCookie("token", {
     expires: new Date(0),
     httpOnly: true,
-    secure: true,
+    secure: false, // Set to true if using HTTPS
   });
 
   return sendResponse(res, 200, true, "Logged out successfully");
