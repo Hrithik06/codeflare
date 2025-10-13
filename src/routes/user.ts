@@ -130,14 +130,14 @@ userRouter.get(
 
       //Adding loggedInUser to remove in feed
       //Case 1 covered
-      idsToRemove.push(loggedInUser._id as string);
+      idsToRemove.push(loggedInUser._id.toString());
 
       //Fetch all Users in DB
       const allUsers = await User.find({}).select(SAFE_USER_DATA);
 
       //Filter _ids who are not in requests/connections
       const filteredUsers = allUsers.filter(
-        (value) => !idsToRemove.includes(value._id as string)
+        (value) => !idsToRemove.includes(value._id.toString())
       );
 
       return sendResponse(res, 200, true, "Feed", filteredUsers);
