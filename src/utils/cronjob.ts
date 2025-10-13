@@ -1,8 +1,8 @@
 import cron from "node-cron";
 import ConnectionRequestModel from "../models/connectionRequest.js";
-import { UserInterface } from "../types/dbInterfaces.js";
+import { UserDocument, BaseEmailRecipient } from "../types/dbInterfaces.js";
 import { sendPendingRequestEmail } from "./emailBuilder.js";
-import { endOfDay, startOfDay, subDays } from "date-fns";
+import { startOfDay, subDays } from "date-fns";
 cron.schedule(
   "00 00 08 * * *",
   async () => {
@@ -18,7 +18,7 @@ cron.schedule(
         // $lt: endOfYesterday
         $lt: new Date(), //till now(whenever this job is triggered say 0800hrs daily)
       },
-    }).populate<{ fromUserId: UserInterface; toUserId: UserInterface }>(
+    }).populate<{ fromUserId: UserDocument; toUserId: UserDocument }>(
       "fromUserId toUserId"
     );
 
@@ -27,27 +27,30 @@ cron.schedule(
     // ];
 
     const seenEmailId = new Set();
-    interface toUser {
-      emailId: string;
-      firstName: string;
-    }
-    const uniqueToUsers: toUser[] = [];
+
+    const uniqueToUsers: BaseEmailRecipient[] = [];
 
     pendingRequests
       .map((req) => req?.toUserId) //get toUsers only
       .filter((toUser) => {
         //Checking if the Set already has the emailIds
         if (!seenEmailId.has(toUser.emailId)) {
+          console.log(typeof toUser._id);
           seenEmailId.add(toUser.emailId);
           uniqueToUsers.push({
             emailId: toUser.emailId,
             firstName: toUser.firstName,
+            lastName: toUser.lastName,
           });
         }
       });
 
     for (const user of uniqueToUsers) {
-      await sendPendingRequestEmail(user.emailId, user.firstName);
+      await sendPendingRequestEmail({
+        emailId: user.emailId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
     }
   },
   {

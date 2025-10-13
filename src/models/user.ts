@@ -1,11 +1,11 @@
 import { Error, Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
-import { UserInterface } from "../types/dbInterfaces.js";
+import { UserDocument } from "../types/dbInterfaces.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { config } from "../config/config.js";
 
-const userSchema = new Schema<UserInterface>(
+const userSchema = new Schema<UserDocument>(
   {
     firstName: {
       type: String,
@@ -129,7 +129,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
   //Get the document to be updated from DB
   try {
     //Get the update document from client
-    const update = this.getUpdate() as Partial<UserInterface>;
+    const update = this.getUpdate() as Partial<UserDocument>;
 
     // update object doesn't have dateOfBirth then early return
     if (!update.dateOfBirth) return;
@@ -137,7 +137,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
     const docToUpdate = (await this.model.findOne(
       this.getFilter(),
       "dateOfBirth"
-    )) as UserInterface;
+    )) as UserDocument;
 
     const docDOB = Date.parse(docToUpdate.dateOfBirth?.toString());
     const updateDOB = Date.parse(update.dateOfBirth.toString());
@@ -153,5 +153,5 @@ userSchema.pre("findOneAndUpdate", async function (next) {
     next(err);
   }
 });
-const UserModel = model<UserInterface>("User", userSchema);
+const UserModel = model<UserDocument>("User", userSchema);
 export default UserModel;

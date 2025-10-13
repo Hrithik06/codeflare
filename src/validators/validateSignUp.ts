@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { userZodSchema } from "../schemas/User.zod.js";
+import { baseUserZodSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 
@@ -9,7 +9,7 @@ const validateSignUp = (
   next: NextFunction
 ): void => {
   try {
-    const validatedData = userZodSchema.parse(req?.body);
+    const validatedData = baseUserZodSchema.parse(req?.body);
     req.validatedData = validatedData;
     return next();
   } catch (err) {

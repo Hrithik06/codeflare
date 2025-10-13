@@ -12,6 +12,9 @@ const requiredEnvVariables = [
   "PORT",
   "JWT_SECRET_KEY",
   "BREVO_API_KEY",
+  "SITE_ADMIN_EMAIL_FOR_BREVO",
+  "NO_REPLY_BREVO",
+  "CONTACT_FORM_NO_REPLY_BREVO",
 ];
 
 requiredEnvVariables.forEach((key) => {
@@ -27,5 +30,9 @@ export const config = {
   ORIGIN: process.env.ORIGIN as string,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY as string,
   BREVO_API_KEY: process.env.BREVO_API_KEY as string,
+  SITE_ADMIN_EMAIL_FOR_BREVO: process.env.SITE_ADMIN_EMAIL_FOR_BREVO as string,
+  NO_REPLY_BREVO: process.env.NO_REPLY_BREVO as string,
+  CONTACT_FORM_NO_REPLY_BREVO: process.env
+    .CONTACT_FORM_NO_REPLY_BREVO as string,
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
 };

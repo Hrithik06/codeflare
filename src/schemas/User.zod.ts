@@ -25,8 +25,7 @@ export const passwordZodSchema = z
   .regex(/[\W_]/, {
     message: "Password must include at least one special character",
   });
-
-export const userZodSchema = z.object({
+export const baseUserZodSchema = z.object({
   firstName: z
     .string({ message: "First Name is required" })
     .trim()
@@ -49,21 +48,25 @@ export const userZodSchema = z.object({
     }),
   emailId: emailIdZodSchema,
   password: passwordZodSchema,
+});
+export const userZodSchema = baseUserZodSchema.extend({
   dateOfBirth: z
     .string({ message: "Date of Birth is required" })
-    .date("Please enter a valid date.")
-    .optional(),
-  gender: z
-    .enum(["Man", "Woman", "Non-binary"], {
-      message: "Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
+    .date("Please enter a valid date."),
+  gender: z.enum(["Man", "Woman", "Non-binary"], {
+    message: "Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
+  }),
+  about: z
+    .string({ message: "About is required" })
+    .trim()
+    .min(10, {
+      message: "About must be at least 10 characters.",
     })
-    .optional(),
-  about: z.string({ message: "About is required" }).trim().optional(),
+    .max(200, { message: "About cannot exceed 200 characters." }),
   skills: z
     .array(z.string({ message: "Skills is required" }))
-    .min(1, { message: "Minimum 1 skill required" })
-    .max(20, { message: "Maximum allowed skills are 20" })
-    .optional(),
+    .min(1, { message: "Minimum 1 skill required." })
+    .max(20, { message: "Maximum allowed skills are 20." }),
   photoUrl: z
     .string({ message: "Photo is required" })
     .trim()
@@ -71,6 +74,5 @@ export const userZodSchema = z.object({
     .refine((value) => validator.isURL(value, { require_tld: true }), {
       //validator's isURL allows only https no localhost
       message: "Invalid URL",
-    })
-    .optional(),
+    }),
 });
