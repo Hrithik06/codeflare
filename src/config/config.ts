@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import { envZodSchema } from "../schemas/EnvFile.zod.js";
+import fs from "fs";
 // Load environment variables from .env file
 
 // Get the env
@@ -12,6 +13,10 @@ const envFile =
 dotenv.config({
 	path: path.resolve(envFile),
 });
+
+if (!fs.existsSync(envFile)) {
+	throw new Error(`Missing env file: ${envFile}`);
+}
 
 //Zod check
 const parsedEnv = envZodSchema.parse(process.env);
