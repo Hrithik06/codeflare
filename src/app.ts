@@ -14,8 +14,8 @@ import "./utils/cronjob.js";
 const app = express();
 
 const corsOptions = {
-  origin: config.ORIGIN,
-  credentials: true,
+	origin: config.ORIGIN,
+	credentials: true,
 };
 //middlewares
 app.use(cors(corsOptions));
@@ -28,18 +28,26 @@ app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", contactRouter);
 
+console.log(new Date(Date.now()).toLocaleString());
 connectDB()
-  .then(() => {
-    console.log("DB Connection successfull ");
-    app.listen(config.PORT, () => {
-      console.log(`Server successfully listening on port ${config.PORT}`);
-    });
-  })
-  .catch((err) => {
-    //TODO: Define Error Object. NEVER use any
-    console.log(err);
-    console.error("Database connection failed \nERROR:: " + err.message);
-    process.exit(1);
-  });
+	.then(() => {
+		console.log("DB Connection successfull ");
+		const server = app.listen(config.PORT, () => {
+			console.log(`Server listening on ${config.PORT}`);
+		});
+
+		// 	app.listen(config.PORT, () => {
+		// 	console.log(`Server successfully listening on port ${config.PORT}`);
+		// });
+		process.on("SIGTERM", () => {
+			server.close();
+		});
+	})
+	.catch((err) => {
+		//TODO: Define Error Object. NEVER use any
+		console.log(err);
+		console.error("Database connection failed \nERROR:: " + err.message);
+		process.exit(1);
+	});
 
 // TODO: Create a custom error object, to handle errors

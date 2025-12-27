@@ -1,0 +1,140 @@
+====================================
+SECURE IMAGE UPLOADS TO AWS S3
+(Plain-text reference)
+
+GOAL
+Allow users to upload ONLY images (profile photos) to S3 using presigned URLs.
+No PDFs, no executables, no renamed files.
+
+KEY CLARIFICATIONS
+
+• Setting ContentType in PutObjectCommand:
+
+DOES NOT restrict uploads by itself
+
+It only sets metadata
+
+It becomes enforcement ONLY when used in a presigned URL
+
+• S3 does NOT support:
+ContentType: "image/*"
+
+• ContentType MUST be an exact MIME type:
+
+image/png
+
+image/jpeg
+
+image/webp
+
+image/gif
+
+THE 3-LAYER SECURITY MODEL
+
+LAYER 1 — FRONTEND (UX ONLY)
+
+<input type="file" accept="image/*" />
+
+What it does:
+• Helps users select images
+• Improves user experience
+
+What it does NOT do:
+• Does NOT provide security
+• Can be bypassed easily
+
+LAYER 2 — BACKEND (REAL SECURITY)
+
+Your backend must:
+
+Receive from frontend:
+• filename
+• mimeType
+
+Validate mimeType:
+• Must be an allowed image type
+
+Example allowed list:
+• image/png
+• image/jpeg
+• image/webp
+• image/gif
+
+If validation fails:
+• Reject request
+• Do NOT generate presigned URL
+
+Generate presigned URL with EXACT ContentType
+
+Example logic (conceptual):
+
+allowedTypes = [
+image/png,
+image/jpeg,
+image/webp,
+image/gif
+]
+
+If mimeType NOT in allowedTypes:
+Reject upload
+
+Generate presigned URL with:
+• Bucket
+• Key
+• ContentType = mimeType (exact)
+
+Why this works:
+• ContentType becomes part of AWS signature
+• If browser changes it → signature mismatch
+• If attacker lies → upload fails
+
+LAYER 3 — S3 BUCKET POLICY (FINAL FIREWALL)
+
+Add this rule to the S3 bucket:
+
+Rule meaning:
+“Deny any PutObject request whose Content-Type is NOT an image”
+
+Policy logic:
+• Effect: DENY
+• Action: s3:PutObject
+• Condition: Content-Type must match image/*
+
+What this protects against:
+• Backend bugs
+• Manual API abuse
+• Renamed files (.exe → .png)
+• Incorrect uploads from any source
+
+LOCAL VS PRODUCTION
+
+No difference.
+
+This policy applies equally to:
+• Localhost backend
+• EC2
+• Vercel
+• Any environment
+
+S3 only evaluates:
+• IAM credentials
+• Request signature
+• Request headers
+
+S3 does NOT care where the request originated.
+
+FINAL RESULT
+
+You now have FOUR layers of protection:
+
+Frontend file picker
+→ Prevents user mistakes
+
+Backend validation
+→ Prevents fake MIME types
+
+Presigned URL signature
+→ Prevents header tampering
+
+S3 bucket policy
+→ Prevents backend bugs & abuse
