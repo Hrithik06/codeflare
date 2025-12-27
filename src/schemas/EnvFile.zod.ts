@@ -14,4 +14,10 @@ export const envZodSchema = z.object({
 	SITE_ADMIN_EMAIL_FOR_BREVO: z.string().email(),
 	NO_REPLY_BREVO: z.string().email(),
 	CONTACT_FORM_NO_REPLY_BREVO: z.string().email(),
+	AWS_REGION: z.string(),
+	S3_BUCKET: z.string(),
+	S3_READ_KEY: z.string(),
+	S3_READ_SECRET: z.string(),
+	S3_UPLOAD_KEY: z.string(),
+	S3_UPLOAD_SECRET: z.string(),
 });
