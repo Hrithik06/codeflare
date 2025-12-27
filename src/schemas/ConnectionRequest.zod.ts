@@ -1,24 +1,14 @@
 import { z } from "zod";
 import mongoose from "mongoose";
+const REQUEST_STATUS = ["interested", "ignored"] as const;
+const objectIdSchema = z
+	.string()
+	.trim()
+	.refine((val) => mongoose.Types.ObjectId.isValid(val), {
+		message: "Invalid ObjectId format",
+	});
 
 export const connectionRequestZodSchema = z.object({
-  // fromUserId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-  //   message: "Invalid fromUserId format",
-  // }), // Validate ObjectId format
-  // toUserId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-  //   message: "Invalid toUserId format",
-  // }),
-  fromUserId: z.string().refine(
-    (val) => {
-      return mongoose.Types.ObjectId.isValid(val);
-    },
-    { message: "Invalid fromUserId format" }
-  ), // Validate ObjectId format
-  toUserId: z.string().refine(
-    (val) => {
-      return mongoose.Types.ObjectId.isValid(val);
-    },
-    { message: "Invalid toUserId format" }
-  ), // Validate ObjectId format
-  status: z.enum(["interested", "ignored"]),
+	toUserId: objectIdSchema,
+	status: z.enum(REQUEST_STATUS),
 });
