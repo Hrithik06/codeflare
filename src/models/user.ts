@@ -1,6 +1,6 @@
 import { Error, Schema, model } from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
-import { UserDocument } from "../types/dbInterfaces.js";
+import { UserDocument, ProfileImageMeta } from "../types/dbInterfaces.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { config } from "../config/config.js";
@@ -76,7 +76,23 @@ const userSchema = new Schema<UserDocument>(
 				}
 			},
 		},
-
+		profileImageMeta: {
+			key: {
+				type: String,
+				trim: true,
+			},
+			contentType: {
+				type: String,
+				trim: true,
+			},
+			isUserUploaded: {
+				type: Boolean,
+				default: false,
+			},
+			imageVersion: {
+				type: Number,
+			},
+		},
 		about: {
 			type: String,
 			trim: true,
