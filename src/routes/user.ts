@@ -31,6 +31,9 @@ userRouter.get(
 				status: "interested",
 				toUserId: loggedInUser._id,
 			}).populate("fromUserId", PUBLIC_USER_FIELDS);
+
+			//TODO: Good to have - feature letting the user know that account which requested connection has been deleted.
+			//if there is a request present but the sender account is deleted fromUserId will be NULL so do not show that request to loggedIn user and delete the request document where fromUserId is NULL.
 			for (const row of requestList) {
 				if (!row.fromUserId) {
 					inValidRequests.push(row);
@@ -42,8 +45,7 @@ userRouter.get(
 				}
 			}
 
-			//TODO: Good to have - feature letting the user know that account which requested connection has been deleted.
-			//if there is a request present but the sender account is no more fromUserId will be NULL so do not send it and delete the request document where fromUserId is NULL.
+			//delete the request document where fromUserId is NULL.
 			if (inValidRequests.length > 0) {
 				ConnectionRequest.deleteMany({ _id: { $in: inValidRequests } })
 					.then((deleteCount) =>
@@ -93,7 +95,7 @@ userRouter.get(
        * because Elena sent the request, fromUserId is Elena's
        //[x]FIXED
       */
-
+			//if either one of fromUserId or toUserId is NULL then that connection should not be shown and deleted from DB
 			for (const row of connectionList) {
 				if (!row.fromUserId || !row.toUserId) {
 					inValidConnections.push(row);
@@ -104,11 +106,12 @@ userRouter.get(
 						)
 					) {
 						validConnections.push(row.toUserId);
+					} else {
+						validConnections.push(row.fromUserId);
 					}
-					validConnections.push(row.fromUserId);
 				}
 			}
-
+			// delete the request document where fromUserId or toUserId is NULL.
 			if (inValidConnections.length > 0) {
 				ConnectionRequest.deleteMany({ _id: { $in: inValidConnections } })
 					.then((deleteCount) =>
@@ -124,6 +127,7 @@ userRouter.get(
 			// 	) {
 			// 		return row.toUserId;
 			// 	}
+
 			// 	return row.fromUserId;
 			// });
 			// .filter((u) => {
