@@ -7,30 +7,19 @@ export interface BaseUser {
 	password: string;
 }
 
-export interface ProfileImage {
+export interface ProfileImageMeta {
 	key: string;
 	contentType: string;
+	isUserUploaded: boolean;
 }
 
-// export interface UserInterface extends BaseUser, Document {
-//   dateOfBirth: Date;
-//   age?: number;
-//   gender?: "Man" | "Woman" | "Non-binary";
-//   photoUrl?: string;
-//   about?: string;
-//   skills?: string[];
-//   getJWT: () => string; // Mongoose Method
-//   matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
-//   ageCalculate: (dob: Date) => number;
-// }
 interface UserInterface extends BaseUser, Document {
 	dateOfBirth: Date;
 	age: number;
 	gender: "Man" | "Woman" | "Non-binary";
-	photoUrl: string;
 	about: string;
 	skills: string[];
-	// profileImage: ProfileImage;
+	profileImageMeta: ProfileImageMeta;
 	getJWT: () => string; // Mongoose Method
 	matchPassword: (passwordInputByUser: string) => Promise<boolean>; // Mongoose Method
 	ageCalculate: (dob: Date) => number; // Mongoose Method

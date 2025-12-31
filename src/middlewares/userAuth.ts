@@ -25,7 +25,7 @@ const userAuth = async (req: Request, res: Response, next: NextFunction) => {
 		const foundUser = await User.findById(decodedData?._id).select([
 			"-password",
 			"-createdAt",
-			"-updatedAt",
+			// "-updatedAt",
 			"-__v",
 		]);
 

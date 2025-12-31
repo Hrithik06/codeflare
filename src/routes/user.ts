@@ -12,8 +12,8 @@ const PUBLIC_USER_FIELDS = [
 	"gender",
 	"age",
 	"about",
-	"photoUrl",
 	"skills",
+	"profileImageMeta",
 ];
 userRouter.get(
 	"/user/requests/received",
@@ -22,21 +22,42 @@ userRouter.get(
 		try {
 			const loggedInUser = req.user;
 
+			const validRequests = [];
+			const inValidRequests = [];
+
 			// if there are requests where loggedInUser is toUser and status is accepted
 			const requestList = await ConnectionRequest.find({
 				status: "interested",
 				toUserId: loggedInUser._id,
 			}).populate("fromUserId", PUBLIC_USER_FIELDS);
 
-			const data = requestList.map((row) => {
-				return {
-					_id: row._id, //requestId
-					fromUserId: row.fromUserId,
-				};
-			});
-			data.length === 0
+			//TODO: Good to have - feature letting the user know that account which requested connection has been deleted.
+			//if there is a request present but the sender account is deleted fromUserId will be NULL so do not show that request to loggedIn user and delete the request document where fromUserId is NULL.
+			for (const row of requestList) {
+				if (!row.fromUserId) {
+					inValidRequests.push(row);
+				} else {
+					validRequests.push({
+						_id: row._id, //requestId
+						fromUserId: row.fromUserId,
+					});
+				}
+			}
+
+			//delete the request document where fromUserId is NULL.
+			if (inValidRequests.length > 0) {
+				ConnectionRequest.deleteMany({ _id: { $in: inValidRequests } })
+					.then((deleteCount) =>
+						console.log("ConnectionRequest Documents Deleted: ", deleteCount),
+					)
+					.catch((err) => {
+						console.error("Background cleanup failed:", err);
+					});
+			}
+
+			validRequests.length === 0
 				? sendResponse(res, 200, true, "No requests for you", [])
-				: sendResponse(res, 200, true, "Your requests are", data);
+				: sendResponse(res, 200, true, "Your requests are", validRequests);
 		} catch (err) {
 			if (err instanceof Error) {
 				console.error("Error occurred: ", err.message);
@@ -57,6 +78,10 @@ userRouter.get(
 			 * loggedInUser is present as fromUser or toUser,
 			 * then there is a connection present
 			 */
+
+			//TODO: Good to have - feature letting the user know that account which they had connection has been deleted.
+			const validConnections = [];
+			const inValidConnections = []; //contains connections if fromUserId or toUserId is NULL i.e, if a account has been deleted
 			const connectionList = await ConnectionRequest.find({
 				status: "accepted",
 				$or: [{ toUserId: loggedInUser._id }, { fromUserId: loggedInUser._id }],
@@ -69,21 +94,50 @@ userRouter.get(
        * because Elena sent the request, fromUserId is Elena's
        //[x]FIXED
       */
-			const data = connectionList.map((row) => {
-				if (
-					row.fromUserId._id.equals(loggedInUser._id as mongoose.Types.ObjectId)
-				) {
-					return row.toUserId;
+			//if either one of fromUserId or toUserId is NULL then that connection should not be shown and deleted from DB
+			for (const row of connectionList) {
+				if (!row.fromUserId || !row.toUserId) {
+					inValidConnections.push(row);
+				} else {
+					if (
+						row.fromUserId._id.equals(
+							loggedInUser._id as mongoose.Types.ObjectId,
+						)
+					) {
+						validConnections.push(row.toUserId);
+					} else {
+						validConnections.push(row.fromUserId);
+					}
 				}
-				return row.fromUserId;
-			});
+			}
+			// delete the request document where fromUserId or toUserId is NULL.
+			if (inValidConnections.length > 0) {
+				ConnectionRequest.deleteMany({ _id: { $in: inValidConnections } })
+					.then((deleteCount) =>
+						console.log("ConnectionRequest Documents Deleted: ", deleteCount),
+					)
+					.catch((err) => {
+						console.error("Background cleanup failed:", err);
+					});
+			}
+			// const data = connectionList.map((row) => {
+			// 	if (
+			// 		row.fromUserId._id.equals(loggedInUser._id as mongoose.Types.ObjectId)
+			// 	) {
+			// 		return row.toUserId;
+			// 	}
 
+			// 	return row.fromUserId;
+			// });
+			// .filter((u) => {
+			// 	return u;
+			// }); //filter out null elements
 			return sendResponse(
 				res,
 				200,
 				true,
-				data.length ? "Your requests" : "No requests for you",
-				data,
+				validConnections.length > 0 ? "Your requests" : "No requests for you",
+				validConnections,
 			);
 		} catch (err) {
 			if (err instanceof Error) {
