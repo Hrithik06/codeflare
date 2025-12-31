@@ -12,7 +12,6 @@ const PUBLIC_USER_FIELDS = [
 	"gender",
 	"age",
 	"about",
-	"photoUrl",
 	"skills",
 	"profileImageMeta",
 ];

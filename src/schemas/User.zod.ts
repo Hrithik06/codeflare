@@ -77,13 +77,5 @@ export const userZodSchema = baseUserZodSchema.extend({
 		.array(z.string({ message: "Skills is required" }))
 		.min(1, { message: "Minimum 1 skill required." })
 		.max(20, { message: "Maximum allowed skills are 20." }),
-	photoUrl: z
-		.string({ message: "Photo is required" })
-		.trim()
-		.url() // zod's url() allows localhost also
-		.refine((value) => validator.isURL(value, { require_tld: true }), {
-			//validator's isURL allows only https no localhost
-			message: "Invalid URL",
-		}),
 	profileImageMeta: profilImageMetaZodSchema,
 });

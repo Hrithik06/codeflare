@@ -17,7 +17,6 @@ interface UserInterface extends BaseUser, Document {
 	dateOfBirth: Date;
 	age: number;
 	gender: "Man" | "Woman" | "Non-binary";
-	photoUrl: string;
 	about: string;
 	skills: string[];
 	profileImageMeta: ProfileImageMeta;

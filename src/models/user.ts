@@ -64,18 +64,6 @@ const userSchema = new Schema<UserDocument>(
 				}
 			},
 		},
-		photoUrl: {
-			type: String,
-			trim: true,
-			default:
-				"https://img.icons8.com/?size=500&id=423kipnPTZJn&format=png&color=000000",
-			validate: (value: string) => {
-				if (!validator.isURL(value)) {
-					//using validatorjs
-					throw new Error("Invalid URL format");
-				}
-			},
-		},
 		profileImageMeta: {
 			key: {
 				type: String,
