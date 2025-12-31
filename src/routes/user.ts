@@ -14,6 +14,7 @@ const PUBLIC_USER_FIELDS = [
 	"about",
 	"photoUrl",
 	"skills",
+	"profileImageMeta",
 ];
 userRouter.get(
 	"/user/requests/received",

@@ -104,29 +104,71 @@ profileRouter.post("/profile/upload-url", userAuth, async (req, res) => {
 		}
 		const userId = req.user._id.toString();
 		const extension = contentType.split("/")[1];
-		const profileImageKey = `profile-images/${userId}/profile.${extension}`;
+		const key = `profile-images/${userId}/profile.${extension}`;
 
-		const s3UploadUrl = await getUploadUrl(profileImageKey);
+		const s3UploadUrl = await getUploadUrl(key);
+
 		return sendResponse(res, 200, true, "S3 Presigned Upload URL", {
 			s3UploadUrl,
-			profileImageKey,
+			key,
 			contentType,
 			expiresIn: 60 * 5, // seconds
 		});
-	} catch (caught) {
-		console.log(caught);
+	} catch (err) {
+		console.log(err);
+		return sendResponse(res, 500, false, "Internal Server Error");
 	}
 });
-
-profileRouter.post("/profile/download-url", async (req, res) => {
+profileRouter.post("/profile/image/confirm", userAuth, async (req, res) => {
 	try {
-		const profileImageKey = req.body.profileImageKey;
+		const key = req.body.key;
 		const contentType = req.body.contentType;
 
-		const s3DownloadUrl = await getDownloadUrl(profileImageKey);
+		const loggedInUser = req.user;
+
+		// if (req.validatedData?.dateOfBirth) {
+		// 	req.validatedData.dateOfBirth = new Date(req.validatedData?.dateOfBirth);
+		// }
+		const updatedData = {
+			profileImageMeta: {
+				key,
+				contentType,
+				isUserUploaded: true,
+				imageVersion: Date.now(),
+			},
+		};
+
+		const updatedUser = await User.findByIdAndUpdate(
+			loggedInUser._id,
+			updatedData,
+			{ new: true, runValidators: true },
+		);
+
+		return sendResponse(
+			res,
+			200,
+			true,
+			"Profile Image Meta Data Updated",
+			updatedUser,
+		);
+	} catch (err) {
+		console.log(err);
+		return sendResponse(res, 500, false, "Internal Server Error");
+	}
+});
+profileRouter.post("/profile/download-url", userAuth, async (req, res) => {
+	try {
+		//can be improved by fetching key and contentType like in profile-view
+		// const user = req?.user;
+
+		const key = req.body.key;
+		const contentType = req.body.contentType;
+
+		const s3DownloadUrl = await getDownloadUrl(key);
+
 		return sendResponse(res, 200, true, "S3 Presigned Download URL", {
 			s3DownloadUrl,
-			profileImageKey,
+			key,
 			contentType,
 			expiresIn: 60 * 5, // seconds
 		});
