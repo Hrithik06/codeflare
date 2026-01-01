@@ -41,10 +41,6 @@ requestRouter.post(
 					missing,
 				);
 
-			if (!loggedInUser.skills.length) {
-				return sendResponse(res, 200, false, "skills Incomplete Profile");
-			}
-
 			//First check whether toUser exists or not?
 			const toUserExists = await User.findById(toUserId);
 			if (!toUserExists) {
