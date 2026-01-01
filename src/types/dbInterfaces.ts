@@ -13,7 +13,7 @@ export interface ProfileImageMeta {
 	isUserUploaded: boolean;
 }
 
-interface UserInterface extends BaseUser, Document {
+export interface UserInterface extends BaseUser, Document {
 	dateOfBirth: Date;
 	age: number;
 	gender: "Man" | "Woman" | "Non-binary";

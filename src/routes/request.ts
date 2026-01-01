@@ -7,8 +7,19 @@ import {
 	validateReviewRequest,
 } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
-
+import { UserInterface } from "../types/dbInterfaces.js";
 const requestRouter = express.Router();
+export const getIncompleteProfileFields = (user: UserInterface) => {
+	const missing = [];
+
+	if (user.skills.length === 0) missing.push("skills");
+	if (!user.profileImageMeta?.isUserUploaded) missing.push("profileImage");
+	if (!user.dateOfBirth) missing.push("dateOfBirth");
+	if (!user.gender) missing.push("gender");
+	if (!user.about?.trim()) missing.push("about");
+
+	return missing;
+};
 
 requestRouter.post(
 	"/request/send/:status/:toUserId",
@@ -19,6 +30,20 @@ requestRouter.post(
 			const loggedInUser = req.user;
 			const fromUserId = String(loggedInUser._id); //comes from loggedInUser
 			const { toUserId, status } = req.params;
+			const missing = getIncompleteProfileFields(loggedInUser);
+			// If any of the fielda in user are not present
+			if (missing.length > 0)
+				return sendResponse(
+					res,
+					403,
+					false,
+					"Complete your profile to send requests",
+					missing,
+				);
+
+			if (!loggedInUser.skills.length) {
+				return sendResponse(res, 200, false, "skills Incomplete Profile");
+			}
 
 			//First check whether toUser exists or not?
 			const toUserExists = await User.findById(toUserId);
