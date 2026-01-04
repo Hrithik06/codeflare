@@ -12,6 +12,7 @@ import userRouter from "./routes/user.js";
 import contactRouter from "./routes/contactUs.js";
 import "./utils/cronjob.js";
 import { intiialiseSocket } from "./utils/socketIO.js";
+import chatRouter from "./routes/chat.js";
 const app = express();
 
 const corsOptions = {
@@ -28,6 +29,7 @@ app.use("/", authRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", contactRouter);
+app.use("/", chatRouter);
 
 const serverSocketIO = http.createServer(app);
 intiialiseSocket(serverSocketIO);
