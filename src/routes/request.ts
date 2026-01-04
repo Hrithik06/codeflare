@@ -1,15 +1,18 @@
 import express, { Request, Response } from "express";
+import { z } from "zod";
+
 import userAuth from "../middlewares/userAuth.js";
-import ConnectionRequest from "../models/connectionRequest.js";
-import User from "../models/user.js";
+import ConnectionRequestModel from "../models/connectionRequest.js";
+import UserModel, { UserDocument } from "../models/user.js";
 import {
 	validateConnectionRequest,
 	validateReviewRequest,
 } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
-import { UserInterface } from "../types/dbInterfaces.js";
+import { connectionRequestZodSchema } from "../schemas/ConnectionRequest.zod.js";
+import { reviewRequestZodSchema } from "../schemas/ReviewRequest.zod.js";
 const requestRouter = express.Router();
-export const getIncompleteProfileFields = (user: UserInterface) => {
+export const getIncompleteProfileFields = (user: UserDocument) => {
 	const missing = [];
 
 	if (user.skills.length === 0) missing.push("skills");
@@ -21,6 +24,8 @@ export const getIncompleteProfileFields = (user: UserInterface) => {
 	return missing;
 };
 
+type ConnectionRequestInput = z.infer<typeof connectionRequestZodSchema>;
+
 requestRouter.post(
 	"/request/send/:status/:toUserId",
 	userAuth,
@@ -28,8 +33,14 @@ requestRouter.post(
 	async (req: Request, res: Response) => {
 		try {
 			const loggedInUser = req.user;
-			const fromUserId = String(loggedInUser._id); //comes from loggedInUser
-			const { toUserId, status } = req.params;
+
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
+			const fromUserId = loggedInUser._id;
+
+			const { toUserId, status } = req.validatedData as ConnectionRequestInput;
+
 			const missing = getIncompleteProfileFields(loggedInUser);
 			// If any of the fielda in user are not present
 			if (missing.length > 0)
@@ -42,7 +53,7 @@ requestRouter.post(
 				);
 
 			//First check whether toUser exists or not?
-			const toUserExists = await User.findById(toUserId);
+			const toUserExists = await UserModel.findById(toUserId);
 			if (!toUserExists) {
 				return sendResponse(res, 404, false, "User not found", null, [
 					{ field: "toUserId", message: "User does not exist" },
@@ -50,7 +61,7 @@ requestRouter.post(
 			}
 
 			//using or condition to check if there is already request between users userA->userB or userB->userA
-			const existingConnection = await ConnectionRequest.findOne({
+			const existingConnection = await ConnectionRequestModel.findOne({
 				$or: [
 					{ fromUserId, toUserId },
 					{ fromUserId: toUserId, toUserId: fromUserId },
@@ -88,7 +99,7 @@ requestRouter.post(
 			}
 
 			//Create a new connection request in DB
-			const newConnectionRequest = new ConnectionRequest({
+			const newConnectionRequest = new ConnectionRequestModel({
 				fromUserId,
 				toUserId,
 				status,
@@ -109,6 +120,7 @@ requestRouter.post(
 		}
 	},
 );
+type ReviewRequestInput = z.infer<typeof reviewRequestZodSchema>;
 
 requestRouter.post(
 	"/request/review/:status/:requestId",
@@ -117,11 +129,16 @@ requestRouter.post(
 	async (req: Request, res: Response) => {
 		try {
 			const loggedInUser = req.user;
-			const { status, requestId } = req.params;
 
-			const existingConnection = await ConnectionRequest.findOne({
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
+			const toUserId = loggedInUser._id;
+			const { status, requestId } = req.validatedData as ReviewRequestInput;
+
+			const existingConnection = await ConnectionRequestModel.findOne({
 				_id: requestId,
-				toUserId: loggedInUser._id,
+				toUserId,
 				status: "interested",
 			});
 			//If there is no Request present in DB

@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import userAuth from "../middlewares/userAuth.js";
-import ConnectionRequest from "../models/connectionRequest.js";
-import User from "../models/user.js";
+import ConnectionRequestModel from "../models/connectionRequest.js";
+import UserModel from "../models/user.js";
 import { sendResponse } from "../utils/responseHelper.js";
 
 const userRouter = express.Router();
@@ -22,11 +22,15 @@ userRouter.get(
 		try {
 			const loggedInUser = req.user;
 
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
+
 			const validRequests = [];
 			const inValidRequests = [];
 
 			// if there are requests where loggedInUser is toUser and status is accepted
-			const requestList = await ConnectionRequest.find({
+			const requestList = await ConnectionRequestModel.find({
 				status: "interested",
 				toUserId: loggedInUser._id,
 			}).populate("fromUserId", PUBLIC_USER_FIELDS);
@@ -46,7 +50,7 @@ userRouter.get(
 
 			//delete the request document where fromUserId is NULL.
 			if (inValidRequests.length > 0) {
-				ConnectionRequest.deleteMany({ _id: { $in: inValidRequests } })
+				ConnectionRequestModel.deleteMany({ _id: { $in: inValidRequests } })
 					.then((deleteCount) =>
 						console.log("ConnectionRequest Documents Deleted: ", deleteCount),
 					)
@@ -74,6 +78,11 @@ userRouter.get(
 	async (req: Request, res: Response) => {
 		try {
 			const loggedInUser = req.user;
+
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
+
 			/**if the status is accepted and
 			 * loggedInUser is present as fromUser or toUser,
 			 * then there is a connection present
@@ -82,7 +91,7 @@ userRouter.get(
 			//TODO: Good to have - feature letting the user know that account which they had connection has been deleted.
 			const validConnections = [];
 			const inValidConnections = []; //contains connections if fromUserId or toUserId is NULL i.e, if a account has been deleted
-			const connectionList = await ConnectionRequest.find({
+			const connectionList = await ConnectionRequestModel.find({
 				status: "accepted",
 				$or: [{ toUserId: loggedInUser._id }, { fromUserId: loggedInUser._id }],
 			})
@@ -112,7 +121,7 @@ userRouter.get(
 			}
 			// delete the request document where fromUserId or toUserId is NULL.
 			if (inValidConnections.length > 0) {
-				ConnectionRequest.deleteMany({ _id: { $in: inValidConnections } })
+				ConnectionRequestModel.deleteMany({ _id: { $in: inValidConnections } })
 					.then((deleteCount) =>
 						console.log("ConnectionRequest Documents Deleted: ", deleteCount),
 					)
@@ -168,12 +177,16 @@ userRouter.get(
 
 userRouter.get("/user/feed", userAuth, async (req: Request, res: Response) => {
 	try {
+		const loggedInUser = req.user;
+
+		if (!loggedInUser) {
+			return sendResponse(res, 401, false, "Unauthorized: Please Login");
+		}
 		const page = Math.max(parseInt(req.query.page as string) || 1, 1);
 		let limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
 		const skip = (page - 1) * limit;
 
-		const loggedInUser = req.user;
-		const existingRequests = await ConnectionRequest.find({
+		const existingRequests = await ConnectionRequestModel.find({
 			$or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
 		})
 			.select("fromUserId toUserId")
@@ -186,7 +199,7 @@ userRouter.get("/user/feed", userAuth, async (req: Request, res: Response) => {
 			excludedUserIds.add(value.toUserId.toString());
 		});
 
-		const showUsers = await User.find({
+		const showUsers = await UserModel.find({
 			$and: [
 				{ _id: { $nin: Array.from(excludedUserIds) } },
 				{ _id: { $ne: loggedInUser._id } }, //Maybe unnescessary as excludedUserIds will have loggedInUser as it can be in (from/to)UserId
@@ -215,10 +228,14 @@ userRouter.get(
 	async (req: Request, res: Response) => {
 		try {
 			const loggedInUser = req.user;
+
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
 			let idsToRemove: Array<string>;
 			//existingRequests contains requests/connections sent or received by loggedInUser(all 4 status)
 			// Case 2,3,4 covered
-			const existingRequests = await ConnectionRequest.find({
+			const existingRequests = await ConnectionRequestModel.find({
 				$or: [{ toUserId: loggedInUser._id }, { fromUserId: loggedInUser._id }],
 			}).select("fromUserId toUserId");
 			idsToRemove = existingRequests.map((row) => {
@@ -235,7 +252,7 @@ userRouter.get(
 			idsToRemove.push(loggedInUser._id.toString());
 
 			//Fetch all Users in DB
-			const allUsers = await User.find({}).select(PUBLIC_USER_FIELDS);
+			const allUsers = await UserModel.find({}).select(PUBLIC_USER_FIELDS);
 
 			//Filter _ids who are not in requests/connections
 			const filteredUsers = allUsers.filter(

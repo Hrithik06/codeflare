@@ -1,10 +1,14 @@
 import express, { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import { z } from "zod";
 
-import User from "../models/user.js";
+import UserModel from "../models/user.js";
 import { validateSignUp, validateLogin } from "../validators/index.js";
 import { sendResponse } from "../utils/responseHelper.js";
+import { loginZodSchema, signupZodSchema } from "../schemas/User.zod.js";
 const authRouter = express.Router();
+
+type SignUpInput = z.infer<typeof signupZodSchema>;
 
 //create a new user
 authRouter.post(
@@ -12,13 +16,16 @@ authRouter.post(
 	validateSignUp,
 	async (req: Request, res: Response) => {
 		try {
-			const validatedData = req?.validatedData;
+			const validatedData = req?.validatedData as SignUpInput;
 			const plainPassword = validatedData?.password;
 			const saltRounds = 10;
 
 			const passwordHash = await bcrypt.hash(plainPassword, saltRounds);
 
-			const newUser = new User({ ...validatedData, password: passwordHash });
+			const newUser = new UserModel({
+				...validatedData,
+				password: passwordHash,
+			});
 			await newUser.save();
 
 			//remove password field when returning data
@@ -63,6 +70,7 @@ authRouter.post(
 		}
 	},
 );
+type LogintInput = z.infer<typeof loginZodSchema>;
 
 // Login
 authRouter.post(
@@ -70,10 +78,11 @@ authRouter.post(
 	validateLogin,
 	async (req: Request, res: Response) => {
 		try {
-			const { emailId, password: plainPassword } = req?.validatedData;
+			const { emailId, password: plainPassword } =
+				req?.validatedData as LogintInput;
 
 			//only fetch "password" and "_id" field from document
-			const foundUser = await User.findOne({ emailId: emailId }).select(
+			const foundUser = await UserModel.findOne({ emailId: emailId }).select(
 				"-createdAt -updatedAt -__v",
 			);
 			if (!foundUser) {

@@ -1,11 +1,42 @@
-import { Error, Schema, model } from "mongoose";
+import {
+	Error,
+	Schema,
+	model,
+	InferSchemaType,
+	HydratedDocument,
+} from "mongoose";
 import jwt, { Secret } from "jsonwebtoken";
-import { UserDocument, ProfileImageMeta } from "../types/dbInterfaces.js";
+// import {
+// 	UserDocument,
+// 	ProfileImageMetaDocument,
+// } from "../types/dbInterfaces.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import { config } from "../config/config.js";
 
-const userSchema = new Schema<UserDocument>(
+interface UserMethods {
+	getJWT(): string;
+	matchPassword(password: string): Promise<boolean>;
+}
+
+const profileImageMetaSchema = new Schema({
+	key: {
+		type: String,
+		trim: true,
+	},
+	contentType: {
+		type: String,
+		trim: true,
+	},
+	isUserUploaded: {
+		type: Boolean,
+		default: false,
+	},
+	imageVersion: {
+		type: Number,
+	},
+});
+const userSchema = new Schema(
 	{
 		firstName: {
 			type: String,
@@ -64,23 +95,7 @@ const userSchema = new Schema<UserDocument>(
 				}
 			},
 		},
-		profileImageMeta: {
-			key: {
-				type: String,
-				trim: true,
-			},
-			contentType: {
-				type: String,
-				trim: true,
-			},
-			isUserUploaded: {
-				type: Boolean,
-				default: false,
-			},
-			imageVersion: {
-				type: Number,
-			},
-		},
+		profileImageMeta: profileImageMetaSchema,
 		about: {
 			type: String,
 			trim: true,
@@ -89,6 +104,8 @@ const userSchema = new Schema<UserDocument>(
 	},
 	{ timestamps: true },
 );
+
+export type User = InferSchemaType<typeof userSchema>;
 
 //this keyword points the current instance of the userSchema
 //any new user is a instance of userSchema
@@ -108,7 +125,7 @@ userSchema.methods.matchPassword = async function (
 	return isMatch;
 };
 
-userSchema.methods.ageCalculate = function (dob: Date) {
+function calculateAge(dob: Date): number {
 	const today = new Date();
 	const birthDate = new Date(dob);
 	let age = today.getFullYear() - birthDate.getFullYear();
@@ -122,11 +139,11 @@ userSchema.methods.ageCalculate = function (dob: Date) {
 		age--;
 	}
 	return age;
-};
+}
 
 userSchema.pre("save", async function (next) {
 	if (this.dateOfBirth) {
-		this.age = this.ageCalculate(this.dateOfBirth);
+		this.age = calculateAge(this.dateOfBirth);
 	}
 	next();
 });
@@ -136,23 +153,25 @@ userSchema.pre("findOneAndUpdate", async function (next) {
 	//Get the document to be updated from DB
 	try {
 		//Get the update document from client
-		const update = this.getUpdate() as Partial<UserDocument>;
+		const update = this.getUpdate() as Partial<User>;
 
 		// update object doesn't have dateOfBirth then early return
-		if (!update.dateOfBirth) return;
+		if (!update.dateOfBirth) return next();
 
-		const docToUpdate = (await this.model.findOne(
+		const docToUpdate = await this.model.findOne(
 			this.getFilter(),
 			"dateOfBirth",
-		)) as UserDocument;
+		);
+		if (!docToUpdate?.dateOfBirth) return next();
 
-		const docDOB = Date.parse(docToUpdate.dateOfBirth?.toString());
-		const updateDOB = Date.parse(update.dateOfBirth.toString());
+		const docDOB = docToUpdate.dateOfBirth.getTime();
+		const updateDOB = update.dateOfBirth.getTime();
+
 		//If both dateOfBirth are same early return no changes to be made
-		if (docDOB === updateDOB) return;
+		if (docDOB === updateDOB) return next();
 
 		// if there is change in dateOfBirth then proceed
-		const age = docToUpdate.ageCalculate(update.dateOfBirth);
+		const age = calculateAge(update.dateOfBirth);
 		this.set({ age: age });
 
 		next();
@@ -160,5 +179,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
 		next(err);
 	}
 });
+export type UserDocument = HydratedDocument<User, UserMethods>;
+
 const UserModel = model<UserDocument>("User", userSchema);
 export default UserModel;
