@@ -1,22 +1,32 @@
 import { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
+import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
+import { objectIdSchema } from "../schemas/ObjectId.zod.js";
 const validatePathId = (
-  req: Request,
-  res: Response,
-  next: NextFunction
+	req: Request,
+	res: Response,
+	next: NextFunction,
 ): void => {
-  const { userId } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return sendResponse(res, 400, false, "Invalid user ID format", null, [
-      {
-        field: "id",
-        message: "The provided ID is not a valid MongoDB ObjectId.",
-      },
-    ]);
-  }
-
-  return next();
+	const { targetUserId } = req.params;
+	try {
+		const validatedData = objectIdSchema.parse(targetUserId);
+		req.validatedData = validatedData;
+		next();
+	} catch (err) {
+		if (err instanceof ZodError) {
+			return sendResponse(
+				res,
+				400,
+				false,
+				"Invalid image confirmation data",
+				null,
+				err.errors.map((e) => ({
+					field: e.path.join("."),
+					message: e.message,
+				})),
+			);
+		}
+		return next();
+	}
 };
 export default validatePathId;

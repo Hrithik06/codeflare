@@ -1,4 +1,3 @@
-import validateGetUserEmail from "./TOBE_DELETED_validateGetUserEmail.js";
 import validateLogin from "./validateLogin.js";
 import validatePathId from "./validatePathId.js";
 import validateProfileEdit from "./validateProfileEdit.js";
@@ -9,7 +8,6 @@ import validateProfileImageUpload from "./validateProfileImageUpload.js";
 import validateProfileImageConfirm from "./validateProfileImageConfirm.js";
 
 export {
-	validateGetUserEmail,
 	validateLogin,
 	validatePathId,
 	validateProfileEdit,
