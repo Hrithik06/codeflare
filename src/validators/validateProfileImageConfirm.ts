@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
-import { objectIdSchema } from "../schemas/ObjectId.zod.js";
-const validatePathId = (
+import { ZodError } from "zod";
+import { profileImageConfirmZodSchema } from "../schemas/ProfileImageConfirm.zod.js";
+const validateProfileImageConfirm = (
 	req: Request,
 	res: Response,
 	next: NextFunction,
-): void => {
-	const { targetUserId } = req.params;
+) => {
 	try {
-		const validatedData = objectIdSchema.parse(targetUserId);
+		const validatedData = profileImageConfirmZodSchema.parse(req.body);
 		req.validatedData = validatedData;
 		next();
 	} catch (err) {
@@ -26,7 +25,7 @@ const validatePathId = (
 				})),
 			);
 		}
-		return next();
+		return next(err);
 	}
 };
-export default validatePathId;
+export default validateProfileImageConfirm;

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
 import { sendResponse } from "../utils/responseHelper.js";
 import { ZodError } from "zod";
 import { connectionRequestZodSchema } from "../schemas/ConnectionRequest.zod.js";
@@ -9,22 +8,13 @@ const validateConnectionRequest = (
 	next: NextFunction,
 ) => {
 	const { toUserId, status } = req.params;
-	const { _id } = req.user;
-	const fromUserId = _id.toString();
 
 	try {
-		// Checking only for toUserId as fromUserId of loggedInUser's so need to again validate
-		if (!mongoose.Types.ObjectId.isValid(toUserId)) {
-			return sendResponse(res, 400, false, "Invalid user ID format", null, [
-				{
-					field: "id",
-					message: "The provided toUserId is not a valid MongoDB ObjectId.",
-				},
-			]);
-		}
-
-		connectionRequestZodSchema.parse({ fromUserId, toUserId, status });
-
+		const validatedData = connectionRequestZodSchema.parse({
+			toUserId,
+			status,
+		});
+		req.validatedData = validatedData;
 		return next();
 	} catch (err) {
 		if (err instanceof ZodError) {

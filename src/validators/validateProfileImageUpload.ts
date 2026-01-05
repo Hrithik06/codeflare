@@ -1,24 +1,23 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
-import { objectIdSchema } from "../schemas/ObjectId.zod.js";
-const validatePathId = (
+import { ZodError } from "zod";
+import { profileImageUploadZodSchema } from "../schemas/ProfileImageUpload.zod.js";
+const validateProfileImageUpload = (
 	req: Request,
 	res: Response,
 	next: NextFunction,
-): void => {
-	const { targetUserId } = req.params;
+) => {
 	try {
-		const validatedData = objectIdSchema.parse(targetUserId);
+		const validatedData = profileImageUploadZodSchema.parse(req.body);
 		req.validatedData = validatedData;
 		next();
 	} catch (err) {
 		if (err instanceof ZodError) {
 			return sendResponse(
 				res,
-				400,
+				415,
 				false,
-				"Invalid image confirmation data",
+				"Only JPEG and PNG images are allowed",
 				null,
 				err.errors.map((e) => ({
 					field: e.path.join("."),
@@ -26,7 +25,7 @@ const validatePathId = (
 				})),
 			);
 		}
-		return next();
+		return next(err);
 	}
 };
-export default validatePathId;
+export default validateProfileImageUpload;

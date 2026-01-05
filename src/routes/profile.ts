@@ -1,10 +1,17 @@
 import express, { Request, Response } from "express";
 import userAuth from "../middlewares/userAuth.js";
 import { sendResponse } from "../utils/responseHelper.js";
-import { validateProfileEdit } from "../validators/index.js";
+import {
+	validateProfileEdit,
+	validateProfileImageUpload,
+	validateProfileImageConfirm,
+} from "../validators/index.js";
 import { getDownloadUrl, getUploadUrl } from "../utils/aws_s3.js";
 
-import User from "../models/user.js";
+import UserModel from "../models/user.js";
+import { profileEditZodSchema } from "../schemas/User.zod.js";
+import { z } from "zod";
+import { profileImageConfirmZodSchema } from "../schemas/ProfileImageConfirm.zod.js";
 const profileRouter = express.Router();
 
 profileRouter.get(
@@ -23,6 +30,7 @@ profileRouter.get(
 		}
 	},
 );
+type ProfileEditInput = z.infer<typeof profileEditZodSchema>;
 
 profileRouter.patch(
 	"/profile/edit",
@@ -32,16 +40,19 @@ profileRouter.patch(
 		try {
 			const loggedInUser = req.user;
 
-			if (req.validatedData?.dateOfBirth) {
-				req.validatedData.dateOfBirth = new Date(
-					req.validatedData?.dateOfBirth,
-				);
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
 			}
-			const updatedData = req.validatedData;
-			const updatedUser = await User.findByIdAndUpdate(
-				loggedInUser._id,
+			const userId = loggedInUser._id;
+
+			const updatedData = req.validatedData as ProfileEditInput;
+			const updatedUser = await UserModel.findByIdAndUpdate(
+				userId,
 				updatedData,
-				{ new: true, runValidators: true },
+				{
+					new: true,
+					runValidators: true,
+				},
 			);
 			return sendResponse(
 				res,
@@ -85,77 +96,99 @@ profileRouter.patch(
 );
 
 const allowImageType = ["image/png", "image/jpeg"];
-profileRouter.post("/profile/upload-url", userAuth, async (req, res) => {
-	try {
-		let contentType = req.body.contentType;
+profileRouter.post(
+	"/profile/upload-url",
+	userAuth,
+	validateProfileImageUpload,
+	async (req: Request, res: Response) => {
+		try {
+			let { contentType } = req.validatedData as {
+				contentType: "image/jpeg" | "image/png" | "image/jpg";
+			};
 
-		if (contentType === "image/jpg") {
-			contentType = "image/jpeg";
-		}
+			if (contentType === "image/jpg") {
+				contentType = "image/jpeg";
+			}
 
-		if (!allowImageType.includes(contentType)) {
-			console.info("Info: Unsupported File Format:", contentType);
-			return sendResponse(
-				res,
-				415,
-				false,
-				"Only JPEG and PNG images are allowed",
-			);
-		}
-		const userId = req.user._id.toString();
-		const extension = contentType.split("/")[1];
-		const key = `profile-images/${userId}/profile.${extension}`;
+			//I think this will not be required as  we are validating in zod
+			if (!allowImageType.includes(contentType)) {
+				console.info("Info: Unsupported File Format:", contentType);
+				return sendResponse(
+					res,
+					415,
+					false,
+					"Only JPEG and PNG images are allowed",
+				);
+			}
+			const userId = req.user?._id;
+			const extension = contentType.split("/")[1];
+			const key = `profile-images/${userId}/profile.${extension}`;
 
-		const s3UploadUrl = await getUploadUrl(key);
+			const s3UploadUrl = await getUploadUrl(key);
 
-		return sendResponse(res, 200, true, "S3 Presigned Upload URL", {
-			s3UploadUrl,
-			key,
-			contentType,
-			expiresIn: 60 * 5, // seconds
-		});
-	} catch (err) {
-		console.log(err);
-		return sendResponse(res, 500, false, "Internal Server Error");
-	}
-});
-profileRouter.post("/profile/image/confirm", userAuth, async (req, res) => {
-	try {
-		const key = req.body.key;
-		const contentType = req.body.contentType;
-
-		const loggedInUser = req.user;
-
-		// if (req.validatedData?.dateOfBirth) {
-		// 	req.validatedData.dateOfBirth = new Date(req.validatedData?.dateOfBirth);
-		// }
-		const updatedData = {
-			profileImageMeta: {
+			return sendResponse(res, 200, true, "S3 Presigned Upload URL", {
+				s3UploadUrl,
 				key,
 				contentType,
-				isUserUploaded: true,
-				imageVersion: Date.now(),
-			},
-		};
+				expiresIn: 60 * 5, // seconds
+			});
+		} catch (err) {
+			console.log(err);
+			return sendResponse(res, 500, false, "Internal Server Error");
+		}
+	},
+);
 
-		const updatedUser = await User.findByIdAndUpdate(
-			loggedInUser._id,
-			updatedData,
-			{ new: true, runValidators: true },
-		);
+type ImageConfirmInput = z.infer<typeof profileImageConfirmZodSchema>;
 
-		return sendResponse(
-			res,
-			200,
-			true,
-			"Profile Image Meta Data Updated",
-			updatedUser,
-		);
-	} catch (err) {
-		console.log(err);
-		return sendResponse(res, 500, false, "Internal Server Error");
-	}
-});
+profileRouter.post(
+	"/profile/image/confirm",
+	userAuth,
+	validateProfileImageConfirm,
+	async (req: Request, res: Response) => {
+		try {
+			const loggedInUser = req.user;
+
+			if (!loggedInUser) {
+				return sendResponse(res, 401, false, "Unauthorized: Please Login");
+			}
+			const userId = loggedInUser._id;
+			const { key, contentType } = req.validatedData as ImageConfirmInput;
+
+			// if (req.validatedData?.dateOfBirth) {
+			// 	req.validatedData.dateOfBirth = new Date(req.validatedData?.dateOfBirth);
+			// }
+			const updatedData = {
+				profileImageMeta: {
+					key,
+					contentType,
+					isUserUploaded: true,
+					imageVersion: Date.now(),
+				},
+			};
+
+			const updatedUser = await UserModel.findByIdAndUpdate(
+				userId,
+				updatedData,
+				{
+					new: true,
+					runValidators: true,
+				},
+			);
+
+			return sendResponse(
+				res,
+				200,
+				true,
+				"Profile Image Meta Data Updated",
+				updatedUser,
+			);
+		} catch (err) {
+			console.log(err);
+			return sendResponse(res, 500, false, "Internal Server Error");
+		}
+	},
+);
 profileRouter.post("/profile/download-url", userAuth, async (req, res) => {
 	try {
 		//can be improved by fetching key and contentType like in profile-view
