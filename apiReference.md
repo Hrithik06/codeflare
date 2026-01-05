@@ -9,6 +9,8 @@
 - GET /profile
 - PATCH /profile/edit
 - PATCH /profile/password
+- GET /profile/upload-url
+- GET /profile/download-url
 
 ## connection/requests
 
@@ -22,3 +24,6 @@
 - GET /user/connections
 - GET /user/requests
 - GET /user/feed
+
+## chat
+- GET /chat/targetUserId

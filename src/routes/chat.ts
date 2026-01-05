@@ -5,7 +5,8 @@ import { objectIdSchema } from "../schemas/ObjectId.zod.js";
 import ChatModel from "../models/chat.js";
 import { sendResponse } from "../utils/responseHelper.js";
 import ConnectionRequestModel from "../models/connectionRequest.js";
-
+//TODO: messages can grow a lot in DB, limit those messages on api calls
+//TODO: fetch more only when scrolled up, build pagination when scrolled show 20msgs first then 20 next
 const chatRouter = express.Router();
 chatRouter.get(
 	"/chat/:targetUserId",
