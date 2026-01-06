@@ -33,20 +33,34 @@ chatRouter.get(
 					"You are not connected to this user",
 				);
 			}
-			let chat = await ChatModel.findOne({
-				participants: { $all: [userId, targetUserId] },
-			}).populate({
+
+			const messsagPopulate = {
 				path: "messages.senderId",
 				select: "firstName lastName",
-			});
+			};
+			/**
+			 *Currently there are only 2 participants using $ne: userId  makes this query scalable comapred to  _id:targetUserId where it is only one value, if in a group chat using $ne will get all participants other than loggedInUser
+			 */
+			const participantsPopulate = {
+				path: "participants",
+				match: { _id: { $ne: userId } }, //return details of participants other than loggedInUser
+				select: "firstName lastName",
+			};
+			let chat = await ChatModel.findOne({
+				participants: { $all: [userId, targetUserId].sort() },
+			})
+				.populate(participantsPopulate)
+				.populate(messsagPopulate);
+
 			if (!chat) {
 				chat = new ChatModel({
-					participants: [userId, targetUserId],
+					participants: [userId, targetUserId].sort(),
 					messages: [],
 				});
+				//Populate after save
+				await chat.save().then((chat) => chat.populate(participantsPopulate));
 			}
-			await chat.save();
-			return sendResponse(res, 200, true, "Your Chats", chat.messages);
+			return sendResponse(res, 200, true, "Your Chats", chat);
 		} catch (err) {
 			console.error(err);
 			if (err instanceof Error) {
