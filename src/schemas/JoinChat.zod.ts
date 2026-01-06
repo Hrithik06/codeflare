@@ -2,5 +2,6 @@ import { z } from "zod";
 import { objectIdSchema } from "./ObjectId.zod.js";
 
 export const joinChatSchema = z.object({
-	targetUserId: objectIdSchema,
+	chatId: objectIdSchema,
+	// targetUserId: objectIdSchema,
 });
