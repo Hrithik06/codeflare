@@ -156,11 +156,13 @@ export const intiialiseSocket = (server: HttpServer) => {
 					});
 					return;
 				}
+
 				io.to(roomId).emit("messageReceived", {
 					senderUserId,
 					firstName,
 					lastName,
 					text,
+					createdAt: new Date().toISOString(),
 				});
 				/**
 				 * Checks if user is participant of the chat or not

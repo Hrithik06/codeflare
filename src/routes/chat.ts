@@ -44,7 +44,7 @@ chatRouter.get(
 			const participantsPopulate = {
 				path: "participants",
 				match: { _id: { $ne: userId } }, //return details of participants other than loggedInUser
-				select: "firstName lastName",
+				select: "firstName lastName profileImageMeta",
 			};
 			let chat = await ChatModel.findOne({
 				participants: { $all: [userId, targetUserId].sort() },

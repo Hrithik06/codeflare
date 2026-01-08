@@ -59,29 +59,18 @@ export const loginZodSchema = z.object({
 	emailId: emailIdZodSchema,
 	password: passwordZodSchema,
 });
-export const profileEditZodSchema = z
-	.object({
-		firstName: firstNameSchema.optional(),
-		lastName: lastNameSchema.optional(),
-		dateOfBirth: z.coerce.date().optional(),
-		gender: z
-			.enum(["Man", "Woman", "Non-binary"], {
-				message:
-					"Invalid gender. Allowed values: 'Man', 'Woman', 'Non-binary'.",
-			})
-			.optional(),
-		about: z
-			.string()
-			.trim()
-			.min(10, {
-				message: "About must be at least 10 characters.",
-			})
-			.max(200, { message: "About cannot exceed 200 characters." })
-			.optional(),
-		skills: z
-			.array(z.string().trim().min(1, "Skill cannot be empty"))
-			.min(1, { message: "Minimum 1 skill required." })
-			.max(20, { message: "Maximum allowed skills are 20." })
-			.optional(),
-	})
+
+const profileEditBaseSchema = z.object({
+	firstName: firstNameSchema,
+	lastName: lastNameSchema,
+	dateOfBirth: z.coerce.date(),
+	gender: z.enum(["Man", "Woman", "Non-binary"], {
+		message: "Please select a gender.",
+	}),
+	about: z.string().trim().min(10).max(200),
+	skills: z.array(z.string().trim().min(1)).min(1).max(20),
+});
+
+export const profileEditBackendSchema = profileEditBaseSchema
+	.partial()
 	.strict();
