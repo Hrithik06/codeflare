@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { profileEditZodSchema } from "../schemas/User.zod.js";
+import { profileEditBackendSchema } from "../schemas/User.zod.js";
 import { ZodError } from "zod";
 import { sendResponse } from "../utils/responseHelper.js";
 //making all fields of user schema as optional for patch/update request
@@ -20,7 +20,7 @@ const validateProfileEdit = (
 		// 		"You cannot update email or password.",
 		// 	);
 		// }
-		const validatedData = profileEditZodSchema.parse(req.body);
+		const validatedData = profileEditBackendSchema.parse(req.body);
 		req.validatedData = validatedData;
 		return next();
 	} catch (err) {

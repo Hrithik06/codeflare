@@ -9,7 +9,7 @@ import {
 import { getDownloadUrl, getUploadUrl } from "../utils/aws_s3.js";
 
 import UserModel from "../models/user.js";
-import { profileEditZodSchema } from "../schemas/User.zod.js";
+import { profileEditBackendSchema } from "../schemas/User.zod.js";
 import { z } from "zod";
 import { profileImageConfirmZodSchema } from "../schemas/ProfileImageConfirm.zod.js";
 const profileRouter = express.Router();
@@ -30,7 +30,7 @@ profileRouter.get(
 		}
 	},
 );
-type ProfileEditInput = z.infer<typeof profileEditZodSchema>;
+type ProfileEditInput = z.infer<typeof profileEditBackendSchema>;
 
 profileRouter.patch(
 	"/profile/edit",
@@ -89,11 +89,11 @@ profileRouter.patch(
 );
 
 //TODO: Implement password reset
-profileRouter.patch(
-	"/profile/password",
-	userAuth,
-	async (req: Request, res: Response) => {},
-);
+// profileRouter.patch(
+// 	"/profile/password",
+// 	userAuth,
+// 	async (req: Request, res: Response) => {},
+// );
 
 const allowImageType = ["image/png", "image/jpeg"];
 profileRouter.post(
