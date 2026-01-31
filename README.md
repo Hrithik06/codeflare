@@ -336,7 +336,7 @@ NO_REPLY_BREVO=xxxx
 CONTACT_FORM_NO_REPLY_BREVO=xxxx
 ```
 
-A sample file is provided:
+A sample file with all required Environment Variables is provided:
 
 `.env.example`
 
