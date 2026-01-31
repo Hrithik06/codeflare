@@ -178,5 +178,3 @@ That’s not “overengineering” — that’s **clarity**.
 ## The one-sentence takeaway
 
 > **Validate at the edges, infer from reality, and let TypeScript enforce contracts instead of guessing them.**
-
-That’s the core lesson you’ll reuse in every serious backend you build.
